@@ -1,4 +1,5 @@
 node_modules/
 dist/
 coverage/
+react-perf-audit.md
 .DS_Store

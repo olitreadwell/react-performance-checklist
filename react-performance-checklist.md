@@ -38,7 +38,7 @@ Use with: README.md (tools and references).
 
 3. **Stable props matter [High]**
    Why: inline objects and functions get new identity each render. memo sees a new prop and renders again.
-   Tool: why-did-you-render.
+   Tool: React Scan (zero setup) or why-did-you-render.
    Fix: hoist values out of the component. Use useCallback or useMemo. Or enable React Compiler.
    Think: a new business card every second. Same words, new card. memo compares the card.
    Done when: why-did-you-render is quiet.
@@ -99,6 +99,7 @@ Use with: README.md (tools and references).
 ## Each tool, one concept
 
 - Profiler -> why a component rendered, and its cost
+- React Scan -> hot re-renders, zero setup
 - why-did-you-render -> unstable props
 - hooks / compiler lint -> bad dependency arrays
 - React Compiler -> memoization done by the build

@@ -42,6 +42,34 @@ npm run check
 
 `npm run check` runs lint and tests. Both must pass.
 
+## Automated audit
+
+The repo includes a small audit tool. It scans a React app and reports
+problems by checklist ID. Lint rules find broken hooks and index keys.
+Heuristic scans find images without lazy loading and missing code splitting.
+
+```bash
+npm install
+npm run audit -- /path/to/react-app
+```
+
+The tool writes `react-perf-audit.md` in the current folder.
+Use `--json` for machine-readable output:
+
+```bash
+npm run audit -- /path/to/react-app --json > audit.json
+```
+
+What the tool can and cannot do. Be honest about this:
+
+- Can: lint rules, index keys, missing keys, images without lazy loading,
+  missing React.lazy, usage counts for memo, useMemo, and useContext.
+- Cannot: real render time, INP, bundle bytes. Those need a browser or a build.
+  The report lists the exact manual step for each.
+
+For re-render detection at runtime, use an existing tool first:
+`npx react-scan@latest <url>`. Guide: `guides/react-scan.md`.
+
 ## Files in this repo
 
 | File | Purpose |
@@ -54,6 +82,7 @@ npm run check
 | `test/perf-regression.test.jsx` | Tests that show a problem and its fix. |
 | `package.json` | Commands for lint and tests. |
 | `guides/react-dev-tools-profiler.md` | Step-by-step: how to use the React DevTools Profiler. |
+| `guides/react-scan.md` | Step-by-step: how to spot re-render problems with zero setup. |
 | `guides/lighthouse.md` | Step-by-step: how to measure a page with Lighthouse. |
 | `guides/why-did-you-render.md` | Step-by-step: how to find unnecessary re-renders. |
 | `guides/bundle-visualizer.md` | Step-by-step: how to see what makes the bundle big. |
@@ -62,10 +91,11 @@ npm run check
 
 Start here if you are new. Do one guide per day. Ten minutes each.
 
-1. `guides/react-dev-tools-profiler.md` — find why a component re-renders.
-2. `guides/lighthouse.md` — measure load speed and read the fixes.
-3. `guides/why-did-you-render.md` — find unnecessary re-renders in dev mode.
-4. `guides/bundle-visualizer.md` — see which file makes the bundle big.
+1. `guides/react-scan.md` — see re-render problems with zero setup.
+2. `guides/react-dev-tools-profiler.md` — find why a component re-renders.
+3. `guides/lighthouse.md` — measure load speed and read the fixes.
+4. `guides/why-did-you-render.md` — find unnecessary re-renders in dev mode.
+5. `guides/bundle-visualizer.md` — see which file makes the bundle big.
 
 Each guide has a short analogy, numbered steps, a practice task, and a "done when" check.
 
@@ -77,6 +107,7 @@ This table links to each tool's official page. Read there for details.
 | Tool | What it does | Reference |
 | --- | --- | --- |
 | React DevTools Profiler | Shows why components render and how long it takes | https://react.dev/learn/react-developer-tools |
+| React Scan | Highlights unnecessary re-renders. Zero code changes. Has a CLI. | https://react-scan.million.dev |
 | why-did-you-render | Logs unnecessary re-renders | https://github.com/welldone-software/why-did-you-render |
 | eslint-plugin-react-hooks | Finds broken hook rules and dependency arrays | https://www.npmjs.com/package/eslint-plugin-react-hooks |
 | eslint-plugin-react-compiler | Finds code the React Compiler cannot optimize | https://www.npmjs.com/package/eslint-plugin-react-compiler |

@@ -21,11 +21,11 @@ Report findings by ID, for example: R-03.
 
 ### R-01 [High] Profile before changing code
 - Detect: no evidence of measurement. The fix starts with guessing.
-- Fix: open React DevTools Profiler. Record the slow action.
+- Fix: run React Scan first (zero setup). Then open React DevTools Profiler and record the slow action.
 - Evidence: name the component and the trigger (state, props, context).
 
 ### R-02 [High] Stable props
-- Detect: inline object, array, or function props inside JSX passed to a memoized child. Example: `onClick={() => ...}` or `style={{...}}`.
+- Detect: inline object, array, or function props inside JSX passed to a memoized child. Example: `onClick={() => ...}` or `style={{...}}`. Or run React Scan and watch for repeated red flashes on unchanged input.
 - Fix: hoist the value out of the component. Use useCallback or useMemo. Or enable React Compiler.
 - Evidence: file:line of the inline prop. Render count before and after.
 

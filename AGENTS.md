@@ -18,7 +18,8 @@ Rules for agents that work in this repository.
 
 - `audit-checklist.md` is the source of truth. Read it fully.
 - `audit-prompt.md` is the prompt to hand another agent.
-- `src/audit-core.js` is the automated audit engine. Run it with `npm run audit -- <path>`.
+- Run `npx react-doctor@latest` and `npx react-scan@latest` for the scan.
+  Do not write a new scanner.
 - Report findings by checklist ID. Give evidence. No evidence, no finding.
 
 ## Commands

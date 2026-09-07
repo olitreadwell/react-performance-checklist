@@ -40,10 +40,10 @@ It adds:
 
 At work (human):
 
-1. Run `npm run audit -- /path/to/react-app`.
-2. Open `react-performance-checklist.md`.
-3. Fix the items marked High, in order.
-4. Measure again after each fix. The report proves the change.
+1. Run the scanners: `npx react-doctor@latest`, then `npx react-scan@latest <url>`.
+3. Open `react-performance-checklist.md`.
+4. Fix the items marked High, in order.
+5. Measure again after each fix. The scanners prove the change.
 
 For the audit (agent):
 
@@ -65,38 +65,26 @@ For interview prep (optional):
 1. Read the guide list below. One guide per day.
 2. The checklist is the same workflow you use at work.
 
-## Automated audit
+## Run the scanners
 
-The repo also ships a small static audit tool: `npm run audit -- <path>`.
-It is a thin pass, not a replacement. Use React Scan and React Doctor
-first. They scan more and give a score. Use this tool when you want
-findings mapped to checklist IDs, or when you cannot install React Doctor.
+Use existing tools. Do not re-implement them.
 
 ```bash
-npm install
-npm run audit -- /path/to/react-app
+npx react-doctor@latest
+npx react-doctor@latest scan http://localhost:3000
 ```
 
-The tool writes `react-perf-audit.md` in the current folder.
-Use `--json` for machine-readable output:
+For re-render hotspots:
 
 ```bash
-npm run audit -- /path/to/react-app --json > audit.json
+npx react-scan@latest http://localhost:3000
 ```
 
-What the tool can and cannot do. Be honest about this:
+Guides: `guides/react-doctor.md`, `guides/react-scan.md`.
 
-- Can: lint rules, index keys, missing keys, images without lazy loading,
-  missing React.lazy, usage counts for memo, useMemo, and useContext.
-- Cannot: real render time, INP, bundle bytes. Those need a browser or a build.
-  The report lists the exact manual step for each.
-
-For re-render detection at runtime, use an existing tool first:
-`npx react-scan@latest <url>`. Guide: `guides/react-scan.md`.
-
-For code smells and runtime traces, use React Doctor:
-`npx react-doctor@latest` for a code audit, `scan <url>` for a profiler trace.
-Guide: `guides/react-doctor.md`.
+These tools do not measure everything. Bundle bytes, INP, and real-user
+metrics need a build or a browser. `audit-checklist.md` lists the manual
+step for each. `audit-prompt.md` turns the scan into an agent verdict.
 
 ## Files in this repo
 

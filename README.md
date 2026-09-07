@@ -41,9 +41,9 @@ It adds:
 At work (human):
 
 1. Run the scanners: `npx react-doctor@latest`, then `npx react-scan@latest <url>`.
-3. Open `react-performance-checklist.md`.
-4. Fix the items marked High, in order.
-5. Measure again after each fix. The scanners prove the change.
+2. Open `react-performance-checklist.md`.
+3. Fix the items marked High, in order.
+4. Measure again after each fix. The scanners prove the change.
 
 For the audit (agent):
 
@@ -97,7 +97,7 @@ step for each. `audit-prompt.md` turns the scan into an agent verdict.
 | `eslint.config.js` | Lint rules that find React performance problems. |
 | `test/perf-regression.test.jsx` | Tests that show a problem and its fix. |
 | `package.json` | Commands for lint and tests. |
-| `.github/workflows/check.yml` | CI: lint, tests, and audit on every push. |
+| `.github/workflows/check.yml` | CI: lint and tests on every push. |
 | `guides/react-dev-tools-profiler.md` | Step-by-step: how to use the React DevTools Profiler. |
 | `guides/react-scan.md` | Step-by-step: how to spot re-render problems with zero setup. |
 | `guides/react-doctor.md` | Step-by-step: how to scan code for smells and traces. |
@@ -157,7 +157,7 @@ This table links to each tool's official page. Read there for details.
 ## CI
 
 The repo ships a GitHub Actions workflow: `.github/workflows/check.yml`.
-It runs lint, tests, and the audit tool on every push and pull request.
+It runs lint and tests on every push and pull request.
 
 For your own app, add these on top of the workflow:
 

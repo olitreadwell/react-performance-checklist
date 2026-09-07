@@ -2,7 +2,7 @@
   "name": "react-performance-checklist",
   "version": "1.0.0",
   "private": true,
-  "description": "One-page React performance interview checklist, with runnable lint and tests.",
+  "description": "Fix slow React apps: one-page checklist, beginner tool guides, and a coding-agent audit flow.",
   "type": "module",
   "scripts": {
     "lint": "eslint .",

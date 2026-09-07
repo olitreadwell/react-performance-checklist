@@ -87,6 +87,7 @@ For re-render detection at runtime, use an existing tool first:
 | `eslint.config.js` | Lint rules that find React performance problems. |
 | `test/perf-regression.test.jsx` | Tests that show a problem and its fix. |
 | `package.json` | Commands for lint and tests. |
+| `.github/workflows/check.yml` | CI: lint, tests, and audit on every push. |
 | `guides/react-dev-tools-profiler.md` | Step-by-step: how to use the React DevTools Profiler. |
 | `guides/react-scan.md` | Step-by-step: how to spot re-render problems with zero setup. |
 | `guides/lighthouse.md` | Step-by-step: how to measure a page with Lighthouse. |
@@ -121,12 +122,36 @@ This table links to each tool's official page. Read there for details.
 | vite-bundle-visualizer | Shows what makes the bundle large | https://www.npmjs.com/package/vite-bundle-visualizer |
 | webpack-bundle-analyzer | Shows bundle size for webpack projects | https://www.npmjs.com/package/webpack-bundle-analyzer |
 | Lighthouse | Measures load speed and suggests fixes | https://developer.chrome.com/docs/lighthouse/overview |
+| Lighthouse CI | Runs Lighthouse on every commit and fails on regressions | https://github.com/GoogleChrome/lighthouse-ci |
+| size-limit | Fails CI when the bundle grows. Has a GitHub Action | https://github.com/ai/size-limit |
 | web-vitals | Measures LCP, INP, and CLS in production | https://www.npmjs.com/package/web-vitals |
 | Chrome Performance panel | Shows long tasks and slow code | https://developer.chrome.com/docs/devtools/performance/ |
 | React.Profiler | Measures render time in tests | https://react.dev/reference/react/Profiler |
 | react-window | Speeds up long lists | https://www.npmjs.com/package/react-window |
 | Biome | Linter and formatter with autofix | https://biomejs.dev/ |
 | Front-End Performance Checklist | Load performance checklist by David Dias | https://github.com/thedaviddias/front-end-performance-checklist |
+
+## IDE and browser extensions
+
+| Tool | Where | What it does | Reference |
+| --- | --- | --- | --- |
+| ESLint | VS Code extension | Runs `eslint.config.js`. Shows red squiggles and quick-fixes | https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint |
+| Biome | VS Code extension | Formats and lints. Autofix with one click | https://marketplace.visualstudio.com/items?itemName=biomejs.biome |
+| React Developer Tools | Chrome extension | Components tab and Profiler tab in DevTools | https://chromewebstore.google.com/detail/react-developer-tools/fmkadmapgofadopljbjfkapdkoienihi |
+| React Scan | Browser extension | Highlights re-renders without code changes | https://github.com/aidenybai/react-scan/blob/main/BROWSER_EXTENSION_GUIDE.md |
+
+## CI
+
+The repo ships a GitHub Actions workflow: `.github/workflows/check.yml`.
+It runs lint, tests, and the audit tool on every push and pull request.
+
+For your own app, add these on top of the workflow:
+
+| Tool | What it does | Reference |
+| --- | --- | --- |
+| Lighthouse CI | Audits LCP, INP, CLS in CI. Fails the build on regression | https://github.com/GoogleChrome/lighthouse-ci |
+| size-limit | Fails CI when the bundle grows past a budget | https://github.com/ai/size-limit |
+| web-vitals + a metrics dashboard | Shows real-user field data from production | https://github.com/GoogleChrome/web-vitals |
 
 ## For very junior developers
 

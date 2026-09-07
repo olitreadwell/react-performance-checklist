@@ -99,6 +99,10 @@ Use with: README.md (tools and references).
 15. **Perf tests [Medium]**
     Tool: test/perf-regression.test.jsx in this repo. React.Profiler.
 
+16. **CI gates [Medium]**
+    Fix: fail the build on perf regressions.
+    Tool: Lighthouse CI (LCP, INP, CLS). size-limit (bundle size). GitHub Actions (lint + tests).
+
 ## Each tool, one concept
 
 - Profiler -> why a component rendered, and its cost

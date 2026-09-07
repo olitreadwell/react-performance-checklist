@@ -60,7 +60,7 @@ If you do not see the tabs, reload the page and look again.
    - "The parent component rendered."
    - "Props changed: value from 1 to 2."
 
-This is the answer you want. Say it in the interview:
+This is the answer you want. Say it to your team:
 "The Profiler showed that X re-rendered because Y."
 
 ## What to do next

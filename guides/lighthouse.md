@@ -50,8 +50,8 @@ Lighthouse inspects your page. Each opportunity is one fix with an estimated tim
    Example: "Remove unused JavaScript — 1.2 s potential savings".
 3. Click an opportunity to see details and a documentation link.
 
-This section answers the interview question "what would you measure?".
-You answer: "I run Lighthouse and read the Opportunities. Each one names a fix."
+This section is your evidence. Quote it when you request a performance fix:
+"I ran Lighthouse and read the Opportunities. Each one names a fix."
 
 ## Step 7: Read the Metrics
 

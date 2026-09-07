@@ -1,18 +1,21 @@
-# React Performance Interview Checklist
+# React Performance Checklist
 
 One page. Short sentences. No shame.
+Works at work and in interviews.
 Use with: README.md (tools and references).
 
 ## Low-spoons mode
 
 - If you have low energy, read only this page.
 - You do not need to memorize anything.
-- If they allow it, look at this page during the interview.
-- Looking at notes is normal. Senior engineers do it.
+- You may look at this page while you work. Notes are normal.
+- Senior engineers keep checklists too.
 - If you forget a tool name, say what the tool does. Names come second.
 - One clear answer is better than a perfect answer.
 
-## The 30-second answer
+## The quick answer
+
+(Say this when someone reports a slow app.)
 
 "I do not guess. I measure first. I open the React DevTools Profiler and see why each component renders. Then I check the lint rules and why-did-you-render for mechanical misses. If load time is the problem, I split the code and shrink the bundle. Tools show the problem. I choose the fix."
 

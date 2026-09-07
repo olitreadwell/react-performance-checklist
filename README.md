@@ -1,15 +1,16 @@
 # React Performance Checklist
 
-A one-page checklist for React performance interviews.
-You can use tools in an interview. You do not need to memorize everything.
+A one-page checklist for fixing slow React apps.
+Use it at work when you need to find a performance problem and choose a fix.
 A coding agent can also use this repo to audit a codebase.
+It also helps with interview prep, because it teaches the same workflow.
 
 Written in Simplified Technical English. Made for people with ADHD or depression.
 Low pressure. Small steps. You do not need a perfect answer.
 
 ## Who is this for
 
-- Developers who have a React performance interview.
+- Developers who need to fix a slow React app.
 - Very junior developers who want to know where to start.
 - Developers who want an agent to audit their codebase.
 
@@ -20,12 +21,12 @@ Tools show you where the problem is. You choose the fix.
 
 ## How to use this repo
 
-For the interview (human):
+At work (human):
 
-1. Open `react-performance-checklist.md`.
-2. Read the 30-second answer and Section A. This takes 5 minutes.
-3. Read the rest on the day, if you have energy.
-4. If they allow it, look at the checklist during the interview.
+1. Run `npm run audit -- /path/to/react-app`.
+2. Open `react-performance-checklist.md`.
+3. Fix the items marked High, in order.
+4. Measure again after each fix. The report proves the change.
 
 For the audit (agent):
 
@@ -41,6 +42,11 @@ npm run check
 ```
 
 `npm run check` runs lint and tests. Both must pass.
+
+For interview prep (optional):
+
+1. Read the guide list below. One guide per day.
+2. The checklist is the same workflow you use at work.
 
 ## Automated audit
 
@@ -74,7 +80,7 @@ For re-render detection at runtime, use an existing tool first:
 
 | File | Purpose |
 | --- | --- |
-| `react-performance-checklist.md` | One page. Use it in the interview. |
+| `react-performance-checklist.md` | One page. Use it at work. |
 | `audit-checklist.md` | Full checklist with detection and fix steps. An agent can apply it. |
 | `audit-prompt.md` | Paste-ready prompt for an auditing agent. |
 | `AGENTS.md` | Rules for coding agents that work in this repo. |
@@ -136,7 +142,7 @@ New words, plain meaning:
 | INP | Interaction to Next Paint. How fast the page answers a click. |
 | CLS | Cumulative Layout Shift. How much the page jumps. |
 
-Start small. Read the 30-second answer first.
+Start small. Read the quick answer first.
 Then do one beginner guide. Then run the tests and the lint.
 That is enough for one day.
 

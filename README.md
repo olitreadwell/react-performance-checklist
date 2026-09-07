@@ -19,6 +19,23 @@ Low pressure. Small steps. Done beats perfect.
 Measure first. Fix what costs the most.
 Tools show you where the problem is. You choose the fix.
 
+## Why this repo exists
+
+React Scan and React Doctor do the scanning. Use them first.
+The scans tell you what is wrong. This repo tells you what to fix,
+in what order, and how to prove the fix worked.
+
+It adds:
+
+- The checklist. The order of work, the classes of fixes, and the concept
+  behind each tool. A scanner gives findings. This gives the next step.
+- The agent audit flow. `audit-checklist.md` and `audit-prompt.md` turn
+  a codebase scan into a structured verdict with evidence rules.
+- Perf test patterns. Call-count tests and `React.Profiler` assertions
+  stop regressions before they ship.
+- Beginner guides. Each tool explained with steps, an analogy, and a
+  practice task.
+
 ## How to use this repo
 
 At work (human):
@@ -50,9 +67,10 @@ For interview prep (optional):
 
 ## Automated audit
 
-The repo includes a small audit tool. It scans a React app and reports
-problems by checklist ID. Lint rules find broken hooks and index keys.
-Heuristic scans find images without lazy loading and missing code splitting.
+The repo also ships a small static audit tool: `npm run audit -- <path>`.
+It is a thin pass, not a replacement. Use React Scan and React Doctor
+first. They scan more and give a score. Use this tool when you want
+findings mapped to checklist IDs, or when you cannot install React Doctor.
 
 ```bash
 npm install

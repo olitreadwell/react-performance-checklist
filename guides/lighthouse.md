@@ -47,7 +47,7 @@ Lighthouse inspects your page. Each opportunity is one fix with an estimated tim
 
 1. Scroll down to "Opportunities".
 2. Each line is one fix, with an estimated saving.
-   Example: "Remove unused JavaScript — 1.2 s potential savings".
+   Example: "Remove unused JavaScript: 1.2 s potential savings".
 3. Click an opportunity to see details and a documentation link.
 
 This section is your evidence. Quote it when you request a performance fix:

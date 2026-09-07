@@ -4,9 +4,7 @@ Rules for agents that work in this repository.
 
 ## Content rules
 
-- Write in Simplified Technical English (ASD-STE100 style).
-- Short sentences. One idea per sentence.
-- Write for readers with ADHD and depression: low pressure, small steps.
+- Plain language. Short sentences. One idea per sentence.
 - Keep files under 200 lines.
 - Put tool how-tos in `guides/`. Write them for a very junior developer:
   numbered steps, exact clicks, a practice task, and a "done when" check.
@@ -25,9 +23,9 @@ Rules for agents that work in this repository.
 
 ## Commands
 
-- `npm run lint` — run ESLint.
-- `npm run test` — run tests.
-- `npm run check` — run both.
+- `npm run lint`: run ESLint.
+- `npm run test`: run tests.
+- `npm run check`: run both.
 
 ## Do not
 

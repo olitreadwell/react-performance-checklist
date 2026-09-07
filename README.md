@@ -5,8 +5,8 @@ Use it at work when you need to find a performance problem and choose a fix.
 A coding agent can also use this repo to audit a codebase.
 It also helps with interview prep, because it teaches the same workflow.
 
-Written in Simplified Technical English. Made for people with ADHD or depression.
-Low pressure. Small steps. You do not need a perfect answer.
+Plain language. Short sentences.
+Low pressure. Small steps. Done beats perfect.
 
 ## Who is this for
 
@@ -98,11 +98,11 @@ For re-render detection at runtime, use an existing tool first:
 
 Start here if you are new. Do one guide per day. Ten minutes each.
 
-1. `guides/react-scan.md` — see re-render problems with zero setup.
-2. `guides/react-dev-tools-profiler.md` — find why a component re-renders.
-3. `guides/lighthouse.md` — measure load speed and read the fixes.
-4. `guides/why-did-you-render.md` — find unnecessary re-renders in dev mode.
-5. `guides/bundle-visualizer.md` — see which file makes the bundle big.
+1. `guides/react-scan.md`: see re-render problems with zero setup.
+2. `guides/react-dev-tools-profiler.md`: find why a component re-renders.
+3. `guides/lighthouse.md`: measure load speed and read the fixes.
+4. `guides/why-did-you-render.md`: find unnecessary re-renders in dev mode.
+5. `guides/bundle-visualizer.md`: see which file makes the bundle big.
 
 Each guide has a short analogy, numbered steps, a practice task, and a "done when" check.
 
@@ -114,7 +114,7 @@ This table links to each tool's official page. Read there for details.
 | Tool | What it does | Reference |
 | --- | --- | --- |
 | React DevTools Profiler | Shows why components render and how long it takes | https://react.dev/learn/react-developer-tools |
-| React Scan | Highlights unnecessary re-renders. Zero code changes. Has a CLI. | https://react-scan.million.dev |
+| React Scan | Shows re-render problems with zero code changes; has a CLI | https://react-scan.million.dev |
 | why-did-you-render | Logs unnecessary re-renders | https://github.com/welldone-software/why-did-you-render |
 | eslint-plugin-react-hooks | Finds broken hook rules and dependency arrays | https://www.npmjs.com/package/eslint-plugin-react-hooks |
 | eslint-plugin-react-compiler | Finds code the React Compiler cannot optimize | https://www.npmjs.com/package/eslint-plugin-react-compiler |

@@ -76,6 +76,10 @@ What the tool can and cannot do. Be honest about this:
 For re-render detection at runtime, use an existing tool first:
 `npx react-scan@latest <url>`. Guide: `guides/react-scan.md`.
 
+For code smells and runtime traces, use React Doctor:
+`npx react-doctor@latest` for a code audit, `scan <url>` for a profiler trace.
+Guide: `guides/react-doctor.md`.
+
 ## Files in this repo
 
 | File | Purpose |
@@ -90,6 +94,7 @@ For re-render detection at runtime, use an existing tool first:
 | `.github/workflows/check.yml` | CI: lint, tests, and audit on every push. |
 | `guides/react-dev-tools-profiler.md` | Step-by-step: how to use the React DevTools Profiler. |
 | `guides/react-scan.md` | Step-by-step: how to spot re-render problems with zero setup. |
+| `guides/react-doctor.md` | Step-by-step: how to scan code for smells and traces. |
 | `guides/lighthouse.md` | Step-by-step: how to measure a page with Lighthouse. |
 | `guides/why-did-you-render.md` | Step-by-step: how to find unnecessary re-renders. |
 | `guides/bundle-visualizer.md` | Step-by-step: how to see what makes the bundle big. |
@@ -99,10 +104,11 @@ For re-render detection at runtime, use an existing tool first:
 Start here if you are new. Do one guide per day. Ten minutes each.
 
 1. `guides/react-scan.md`: see re-render problems with zero setup.
-2. `guides/react-dev-tools-profiler.md`: find why a component re-renders.
-3. `guides/lighthouse.md`: measure load speed and read the fixes.
-4. `guides/why-did-you-render.md`: find unnecessary re-renders in dev mode.
-5. `guides/bundle-visualizer.md`: see which file makes the bundle big.
+2. `guides/react-doctor.md`: scan a codebase for smells and traces.
+3. `guides/react-dev-tools-profiler.md`: find why a component re-renders.
+4. `guides/lighthouse.md`: measure load speed and read the fixes.
+5. `guides/why-did-you-render.md`: find unnecessary re-renders in dev mode.
+6. `guides/bundle-visualizer.md`: see which file makes the bundle big.
 
 Each guide has a short analogy, numbered steps, a practice task, and a "done when" check.
 
@@ -115,6 +121,8 @@ This table links to each tool's official page. Read there for details.
 | --- | --- | --- |
 | React DevTools Profiler | Shows why components render and how long it takes | https://react.dev/learn/react-developer-tools |
 | React Scan | Shows re-render problems with zero code changes; has a CLI | https://react-scan.million.dev |
+| React Doctor | Scans for React code smells, scores 0-100, records runtime traces | https://react.doctor |
+| Million Lint | React linting from the React Scan team. React Scan credits it | https://million.dev |
 | why-did-you-render | Logs unnecessary re-renders | https://github.com/welldone-software/why-did-you-render |
 | eslint-plugin-react-hooks | Finds broken hook rules and dependency arrays | https://www.npmjs.com/package/eslint-plugin-react-hooks |
 | eslint-plugin-react-compiler | Finds code the React Compiler cannot optimize | https://www.npmjs.com/package/eslint-plugin-react-compiler |
@@ -151,6 +159,7 @@ For your own app, add these on top of the workflow:
 | --- | --- | --- |
 | Lighthouse CI | Audits LCP, INP, CLS in CI. Fails the build on regression | https://github.com/GoogleChrome/lighthouse-ci |
 | size-limit | Fails CI when the bundle grows past a budget | https://github.com/ai/size-limit |
+| React Doctor | One-command CI: `npx react-doctor@latest ci install`. Reports only new PR issues | https://react.doctor/ci |
 | web-vitals + a metrics dashboard | Shows real-user field data from production | https://github.com/GoogleChrome/web-vitals |
 
 ## For very junior developers
@@ -174,6 +183,9 @@ That is enough for one day.
 ## Credits
 
 Inspired by https://github.com/thedaviddias/front-end-performance-checklist
+The tool list builds on React Scan and React Doctor. Their READMEs credit
+React DevTools, why-did-you-render, and Million Lint. This repo keeps
+the same chain of credit.
 
 ## License
 

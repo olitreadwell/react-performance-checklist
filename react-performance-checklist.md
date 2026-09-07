@@ -101,7 +101,7 @@ Use with: README.md (tools and references).
 
 16. **CI gates [Medium]**
     Fix: fail the build on perf regressions.
-    Tool: Lighthouse CI (LCP, INP, CLS). size-limit (bundle size). GitHub Actions (lint + tests).
+    Tool: Lighthouse CI (LCP, INP, CLS). size-limit (bundle size). React Doctor (code smells, blocks PRs). GitHub Actions (lint + tests).
 
 ## Each tool, one concept
 

@@ -11,6 +11,7 @@ Report findings by ID, for example: R-03.
 3. Produce findings only if you have evidence.
 4. Do not claim a problem without evidence.
 5. Report the evidence: file path, line number, or a number you measured.
+6. Run `npx react-doctor@latest` in the target. Use its warnings as evidence. Do not invent findings it already proved.
 
 ## Severity
 

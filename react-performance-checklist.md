@@ -23,11 +23,8 @@ The same content lives in the README.
    npx react-doctor@latest
    ```
 
-2. Run React Scan:
-
-   ```bash
-   npx react-scan@latest http://localhost:3000
-   ```
+2. Turn on React Scan. Easiest: install the browser extension and open
+   your app. Or run `npx -y react-scan@latest init` to add it to the project.
 
 3. Run Lighthouse on the page.
 4. Record the Profiler during normal use. Open the slowest render.

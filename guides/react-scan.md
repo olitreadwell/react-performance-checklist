@@ -20,7 +20,11 @@ They glow red while you use the app.
 
 Pick one way. Easiest first.
 
-1. Automatic setup:
+1. Browser extension. No code changes, no install in your project.
+   Install the extension, then open your app in the browser.
+   Guide: https://github.com/aidenybai/react-scan/blob/main/BROWSER_EXTENSION_GUIDE.md
+
+2. Automatic setup:
 
    ```bash
    npx -y react-scan@latest init
@@ -28,13 +32,13 @@ Pick one way. Easiest first.
 
    The tool detects your framework and sets it up for you.
 
-2. Script tag. Open `index.html`. Put this BEFORE any other script:
+3. Script tag. Open `index.html`. Put this BEFORE any other script:
 
    ```html
    <script src="https://unpkg.com/react-scan/dist/auto.global.js"></script>
    ```
 
-3. npm. In your project folder:
+4. npm. In your project folder:
 
    ```bash
    npm install -D react-scan
@@ -59,17 +63,6 @@ Pick one way. Easiest first.
 3. A small panel shows render counts and times.
 
 A component that flashes when nothing changed is your problem.
-
-## Step 4: Scan a running app without setup
-
-You can scan a running app from the terminal. No code needed:
-
-```bash
-npx react-scan@latest http://localhost:3000
-```
-
-It opens an isolated browser and shows you the highlights.
-It works on any URL. Even other websites.
 
 ## What to do next
 

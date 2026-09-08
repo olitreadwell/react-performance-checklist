@@ -46,11 +46,9 @@ If nothing feels slow, do this in order. Each step takes minutes.
    npx react-doctor@latest
    ```
 
-2. Run React Scan against your running app. It shows re-render hotspots:
-
-   ```bash
-   npx react-scan@latest http://localhost:3000
-   ```
+2. Turn on React Scan. It shows re-render hotspots:
+   - Easiest: install the browser extension, open your app, watch the red flashes.
+   - Or automatic setup: `npx -y react-scan@latest init`
 
 3. Run Lighthouse on the page. It measures load time:
    open DevTools, click the Lighthouse tab, generate a report.
@@ -66,8 +64,9 @@ Copy-paste, in order:
 # 1. Scan for code smells. No install. Runs once.
 npx react-doctor@latest
 
-# 2. Scan for re-render hotspots. No install. Your app must be running.
-npx react-scan@latest http://localhost:3000
+# 2. Turn on React Scan. Shows re-render hotspots.
+#    Easiest: install the browser extension, open your app.
+#    Or: npx -y react-scan@latest init
 
 # 3. Optional: use this repo's lint config and tests.
 npm install
@@ -77,7 +76,7 @@ npm run check
 What each command does:
 
 - `npx react-doctor@latest` downloads and runs React Doctor once. It does not change your project.
-- `npx react-scan@latest <url>` opens a browser and highlights re-renders.
+- React Scan: install the browser extension, or run `npx -y react-scan@latest init` to add it to your project. It highlights re-renders while you use the app.
 - `npm install` installs this repo's own dev dependencies (ESLint, Vitest). Only needed for step 3.
 - `npm run check` runs the included lint and tests. Both must pass.
 

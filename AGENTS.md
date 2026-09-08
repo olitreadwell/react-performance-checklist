@@ -6,9 +6,10 @@ Rules for agents that work in this repository.
 
 - Plain language. Short sentences. One idea per sentence.
 - Keep files under 200 lines.
-- Put tool how-tos in `guides/`. Write them for a very junior developer:
+- Put tool how-tos in `guides/`. Write them for new developers:
   numbered steps, exact clicks, a practice task, and a "done when" check.
-- Glossary entries: a plain meaning plus one example sentence. No em dashes.
+- Glossary entries: a plain meaning, one example sentence, and a link to
+  official docs when one exists. No em dashes.
 
 ## Naming
 

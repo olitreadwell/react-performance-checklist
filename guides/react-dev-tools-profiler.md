@@ -1,7 +1,7 @@
 # How to use the React DevTools Profiler
 
-For a very junior developer. Follow the steps in order.
-If a step confuses you, re-read it. Do not skip it.
+New to React? Go slowly. Follow the steps in order.
+Re-read a step if it confuses you.
 
 ## What this tool does
 
@@ -45,17 +45,23 @@ If you do not see the tabs, reload the page and look again.
 
 ## Step 5: Record a slow action
 
+The slow action is the thing the user says feels slow.
+If they say typing lags, record typing.
+If they say a screen takes long to open, record opening it.
+
 1. Click the record button. It is a blue circle, like a record button.
 2. Do the slow action.
-   Example: type in a search box. Open a list. Click a button.
 3. Click the record button again. Recording stops.
 4. Wait. A list of commits appears on the left. Each commit is one render.
 
 ## Step 6: Read the results
 
-1. Click the tallest bar in the chart.
-2. Click a component name in the flamegraph.
-3. On the right, read "Why did this render?".
+1. Look at the bar chart at the top. Each bar is one render, called a commit.
+2. Find the tallest bar. A taller bar is a slower render. That is the slowest commit.
+3. Click the tallest bar.
+4. Click a component name in the flamegraph.
+   In the flamegraph, a wider bar means more time. Height is not time there.
+5. On the right, read "Why did this render?".
    It says things like:
    - "The parent component rendered."
    - "Props changed: value from 1 to 2."
@@ -67,6 +73,7 @@ This is the answer you want. Say it to your team:
 
 - If the reason is "the parent rendered", the child may need memo or a stable prop.
 - If the reason is "props changed" but the value looks the same, the prop gets a new identity every render. See checklist item 3.
+- Unexpected remount: the component loses its state. Focus jumps, the input clears, or the Profiler shows a new mount. That is usually a key problem. See checklist item 6.
 
 ## Done when
 

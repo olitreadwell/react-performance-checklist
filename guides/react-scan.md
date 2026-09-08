@@ -1,6 +1,6 @@
 # How to use React Scan
 
-For a very junior developer. Follow the steps in order.
+New to React? Go slowly. Follow the steps in order.
 
 ## What this tool does
 
@@ -11,40 +11,41 @@ It is open source (MIT). Its page: https://react-scan.million.dev
 
 ## The analogy
 
-Think of a thermal camera.
-It shows which parts of a machine are hot.
-React Scan shows which components are "hot" with re-renders.
-The hot ones flash red on the screen.
+Think of a fever scanner at an airport.
+It shows hot spots on a screen.
+React Scan shows hot spots in your app: the components that re-render too often.
+They glow red while you use the app.
 
-## Step 1: Turn it on (choose one way)
+## Step 1: Turn it on
 
-Way A: script tag. Open `index.html`.
-Put this BEFORE any other script:
+Pick one way. Easiest first.
 
-```html
-<script src="https://unpkg.com/react-scan/dist/auto.global.js"></script>
-```
+1. Automatic setup:
 
-Way B: npm. In your project folder:
+   ```bash
+   npx -y react-scan@latest init
+   ```
 
-```bash
-npm install -D react-scan
-```
+   The tool detects your framework and sets it up for you.
 
-Then add this at the top of your entry file, before your app code:
+2. Script tag. Open `index.html`. Put this BEFORE any other script:
 
-```js
-import { scan } from "react-scan";
-scan();
-```
+   ```html
+   <script src="https://unpkg.com/react-scan/dist/auto.global.js"></script>
+   ```
 
-Way C: automatic setup:
+3. npm. In your project folder:
 
-```bash
-npx -y react-scan@latest init
-```
+   ```bash
+   npm install -D react-scan
+   ```
 
-The tool detects your framework and sets it up for you.
+   Then add this at the top of your entry file, before your app code:
+
+   ```js
+   import { scan } from "react-scan";
+   scan();
+   ```
 
 ## Step 2: Run your app
 

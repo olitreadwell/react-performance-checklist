@@ -1,6 +1,6 @@
 # How to use Lighthouse
 
-For a very junior developer. Follow the steps in order.
+New to React? Go slowly. Follow the steps in order.
 
 ## What this tool does
 
@@ -10,8 +10,8 @@ Use it to measure load speed: LCP, INP-like measures, and layout shift.
 
 ## The analogy
 
-Think of a car safety inspection, like a WOF in New Zealand.
-The inspector runs tests, gives a score, and writes a fix list.
+Think of a car inspection before a long trip.
+The mechanic tests the car, gives a score, and writes a list of fixes.
 Each fix saves you time or money.
 Lighthouse inspects your page. Each opportunity is one fix with an estimated time saving.
 

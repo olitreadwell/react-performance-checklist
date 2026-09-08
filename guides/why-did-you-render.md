@@ -1,6 +1,6 @@
 # How to use why-did-you-render
 
-For a very junior developer. Follow the steps in order.
+New to React? Go slowly. Follow the steps in order.
 
 ## What this tool does
 

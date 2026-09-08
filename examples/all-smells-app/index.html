@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>All Smells App</title>
+    <!-- F-02: render-blocking font. No preconnect, no display swap. -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700"
+      rel="stylesheet"
+    />
+    <!-- F-03: render-blocking stylesheet full of unused CSS. -->
+    <link rel="stylesheet" href="/src/styles.css" />
+    <!-- F-05: blocking third-party scripts on every page. -->
+    <script src="https://analytics.example.com/tracker.js"></script>
+    <script src="https://chat-widget.example.com/widget.js"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

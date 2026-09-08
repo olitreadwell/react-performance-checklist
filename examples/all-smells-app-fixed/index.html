@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>All Smells App (fixed)</title>
+    <!-- F-02 fix: preconnect to the font origin, async load with swap. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap"
+      rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
+    />
+    <!-- F-03 fix: critical CSS inline, the rest loads after first paint. -->
+    <style>
+      body { margin: 0; font-family: system-ui, sans-serif; }
+      header { display: flex; gap: 1rem; padding: 1rem; border-bottom: 1px solid #ddd; }
+    </style>
+    <!-- F-05 fix: third-party scripts defer, so they do not block
+         first paint or the main thread. -->
+    <script defer src="https://analytics.example.com/tracker.js"></script>
+    <script defer src="https://chat-widget.example.com/widget.js"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

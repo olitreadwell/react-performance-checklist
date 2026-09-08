@@ -16,9 +16,9 @@ export const PRODUCTS = Array.from({ length: 500 }, (_, i) => {
   return {
     id,
     name: `Product ${id}`,
-  // Product 1 is expensive on purpose: name sort and price sort must
-  // produce a different first row, so the R-06 key test can see it.
-  price: i === 0 ? 999 : (i % 100) + 1,
+    // Product 1 is expensive on purpose: name sort and price sort must
+    // produce a different first row, so the R-06 key test can see it.
+    price: i === 0 ? 999 : (i % 100) + 1,
     image: svgUri(`Product ${id}`, 400, 300),
     srcset: [
       `${svgUri(`Product ${id}`, 200, 150)} 200w`,

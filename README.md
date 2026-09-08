@@ -942,6 +942,11 @@ The example app (`examples/slow-app-fixed/`) ships all of it wired up:
 lint, tests, size-limit, Lighthouse budgets, and a CI workflow. See
 [examples/WALKTHROUGH.md](examples/WALKTHROUGH.md).
 
+For the complete picture, `examples/all-smells-app/` violates every rule
+in this checklist at once, and `examples/all-smells-app-fixed/` is the
+same app after the skill ran. Every problem, the metrics that proved it,
+and the verification that it is fixed: [examples/WALKTHROUGH-ALL-SMELLS.md](examples/WALKTHROUGH-ALL-SMELLS.md).
+
 ## For agents
 
 Three surfaces, one rule corpus. Modeled on thedaviddias/front-end-checklist.

@@ -45,6 +45,12 @@ Terms with a link open the official documentation.
 | Subtree | A component and everything it renders. | "The list row and its children are one subtree." |
 | Boundary | The component you wrap with memo. Re-renders stop there. | "memo on the row is the boundary." |
 | Remount | React destroying a component and building it again. | "A remount clears the input." |
+| Debounce | Run an update after a pause in events. | "Debounce the search so it queries after you stop typing." |
+| Throttle | Run an update at most once per time window. | "Throttle the scroll handler to once per frame." |
+| Selector | A function that picks the slice of state a component reads. | "useStore((state) => state.count) subscribes to one slice." |
+| [startTransition](https://react.dev/reference/react/startTransition) | Mark an update as non-urgent. | "startTransition keeps typing responsive while the list filters." |
+| [useDeferredValue](https://react.dev/reference/react/useDeferredValue) | Defer a value, not a whole update. | "useDeferredValue delays the heavy list render." |
+| Cleanup | The function an effect returns, run before the next effect or unmount. | "The cleanup removes the window listener." |
 
 ## Load time
 
@@ -61,6 +67,12 @@ Terms with a link open the official documentation.
 | Critical CSS | The styles the first screen needs, inlined so the page paints without waiting. | "Critical CSS is in the HTML head." |
 | [CDN](https://developer.mozilla.org/en-US/docs/Glossary/CDN) | A network of servers that serves files from the one nearest the user. | "The CDN serves the file from Auckland." |
 | [defer](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/defer) | Download in the background, run after the page parses. | "defer keeps the script off the critical path." |
+| Waterfall | Requests that run one after another because each waits for the one before. | "Three awaits make a waterfall." |
+| [Preload](https://web.dev/articles/uses-rel-preload) | Start downloading a critical resource before the parser needs it. | "Preload the LCP image." |
+| [Preconnect](https://web.dev/articles/uses-rel-preconnect) | Open a connection to an origin before it is needed. | "Preconnect to the font CDN." |
+| Barrel file | An index file that re-exports many modules. | "Importing from the barrel loads modules you never use." |
+| Dedupe | Two callers of the same key share one request. | "SWR dedupes the fetch for both rows." |
+| staleTime | How long cached data counts as fresh. | "A one-minute staleTime stops refetching on every mount." |
 
 ## Numbers people measure
 
@@ -76,6 +88,9 @@ Terms with a link open the official documentation.
 | Baseline | The number you start from, before a fix. | "The baseline LCP was 4 s." |
 | Budget | A limit you set, so a slow change fails the build. | "Lighthouse CI checks the budget." |
 | Regression | A change that makes things slower again. | "The new filter caused a regression." |
+| Lab data | Measured on one controlled machine. | "Lighthouse scores are lab data." |
+| Field data | Measured by real users in production. | "CrUX is field data." |
+| [CrUX](https://developer.chrome.com/docs/crux) | Google's real-user data for a URL or origin. | "Check CrUX to see real LCP." |
 
 ## Tools and CI
 

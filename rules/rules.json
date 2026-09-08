@@ -219,6 +219,66 @@
     "note": "useMemo does not skip the map. The map still runs on every render, and that is the cheap part: it only builds element objects. useMemo skips the sort, and only when items keeps the same identity. If the parent builds the array inline (a new array every render), the sort runs anyway. If the rows themselves are expensive to re-render, memoize the row at the boundary (see item 4). useMemo does not stop re-renders, it only caches the value."
   },
   {
+    "id": "R-08",
+    "title": "Inline components",
+    "severity": "High",
+    "category": "rendering",
+    "smell": true,
+    "smellText": "Component defined inside another component",
+    "summary": "A component defined inside a component unmounts its children on every render.",
+    "why": "Each render creates a new component type. React sees a different type, throws away the old subtree, and builds a new one. State resets and the page re-renders far more than needed.",
+    "how": [
+      "Define components at module scope, never inside another component.",
+      "If a component needs props, pass them. Do not close over local values by defining it inline."
+    ],
+    "bullets": [
+      "Smell: a `function`, `const`, or arrow component declared inside the render body of another component."
+    ],
+    "note": "The fix is not memo. The fix is moving the component out of the render body.",
+    "verify": "The Profiler shows no full remounts on parent re-renders.",
+    "links": [
+      {
+        "kind": "docs",
+        "label": "React docs: don't define components inside components",
+        "url": "https://react.dev/learn/your-first-component#defining-and-using-a-component"
+      }
+    ],
+    "smellCode": "function Parent() {\n  const Inner = () => <span />;\n  return <Inner />;\n}",
+    "example": "// Bad: Inner is a new component type every render.\n// React unmounts and remounts it each time.\nfunction Parent() {\n  const Inner = () => <span>hi</span>;\n  return <Inner />;\n}\n\n// Good: Inner lives at module scope. Same type every render.\nfunction Inner() {\n  return <span>hi</span>;\n}\n\nfunction Parent() {\n  return <Inner />;\n}"
+  },
+  {
+    "id": "R-09",
+    "title": "Debounce high-frequency input",
+    "severity": "Medium",
+    "category": "rendering",
+    "smell": false,
+    "summary": "Every keystroke or scroll event triggers a state update or network call.",
+    "why": "Each state update triggers a render. Typing, scrolling, and resizing fire dozens of events per second, so raw updates make the page janky.",
+    "how": [
+      "Debounce search input: wait 150-300 ms after the last keystroke before updating.",
+      "Throttle scroll and resize handlers so they run at most once per frame.",
+      "Add { passive: true } to scroll, wheel, and touch listeners.",
+      "Use requestIdleCallback to defer work that is not urgent."
+    ],
+    "bullets": [
+      "Debounce: run the update after a pause in events. [Definition](glossary.md)",
+      "Throttle: run the update at most once per time window. [Definition](glossary.md)"
+    ],
+    "verify": "The Profiler shows one render per pause, not one per event.",
+    "links": [
+      {
+        "kind": "docs",
+        "label": "web.dev: debounce your input handlers",
+        "url": "https://web.dev/articles/optimize-inp#debounce-input-handlers"
+      },
+      {
+        "kind": "docs",
+        "label": "Vercel: use passive event listeners",
+        "url": "https://github.com/vercel-labs/agent-skills/tree/main/skills/react-best-practices/rules/client-passive-event-listeners.md"
+      }
+    ]
+  },
+  {
     "id": "L-01",
     "title": "Split the code",
     "severity": "High",
@@ -319,6 +379,155 @@
     "example": "// Bad: every image loads on page open.\n<img src=\"hero.jpg\" />\n\n// Good: below-the-fold images load only when near the screen.\n<img\n  src=\"hero.jpg\"\n  loading=\"lazy\"\n  sizes=\"(max-width: 600px) 100vw, 50vw\"\n/>"
   },
   {
+    "id": "L-04",
+    "title": "Preload and preconnect",
+    "severity": "Medium",
+    "category": "load",
+    "smell": false,
+    "summary": "Critical resources discovered too late, or connections opened only when needed.",
+    "why": "Preload starts the download before the code asks for the resource. Preconnect opens the connection early. Both shorten the critical path.",
+    "how": [
+      "Add `<link rel=\"preload\">` for the resource that becomes LCP; the image, font, or script the first screen needs.",
+      "Add `<link rel=\"preconnect\">` to the origins the page needs early, like a font CDN.",
+      "Prefetch links the user will likely click next."
+    ],
+    "bullets": [
+      "Preload: download a critical resource early. [Definition](glossary.md)",
+      "Preconnect: open a connection to an origin before it is needed. [Definition](glossary.md)"
+    ],
+    "verify": "Lighthouse resource-hint audits pass, and LCP improves.",
+    "links": [
+      {
+        "kind": "docs",
+        "label": "web.dev: preload and preconnect",
+        "url": "https://web.dev/articles/uses-rel-preload"
+      }
+    ],
+    "example": "<!-- Bad: the LCP image is discovered only when the page parses it. -->\n<img src=\"hero.webp\" />\n\n<!-- Good: the download starts before the parser reaches it. -->\n<link rel=\"preload\" as=\"image\" href=\"hero.webp\" />\n<img src=\"hero.webp\" />"
+  },
+  {
+    "id": "L-05",
+    "title": "Barrel imports",
+    "severity": "Medium",
+    "category": "load",
+    "smell": true,
+    "smellText": "Importing from a barrel file instead of the module",
+    "summary": "Importing from a barrel file can load whole libraries you never use.",
+    "why": "A barrel file re-exports many modules from one index. Importing from it makes the bundler pull in modules you never use. Icon and component libraries can re-export thousands of modules, adding hundreds of milliseconds to the import and bloating the bundle.",
+    "how": [
+      "Import from the exact module path, not the barrel index.",
+      "For large libraries, use subpath imports or the bundler's optimizePackageImports.",
+      "Check the bundle visualizer for whole libraries appearing on one import."
+    ],
+    "bullets": [
+      "Barrel file: an index that re-exports many modules. [Definition](glossary.md)"
+    ],
+    "verify": "The bundle visualizer no longer shows the whole library for one import.",
+    "links": [
+      {
+        "kind": "docs",
+        "label": "Vercel: avoid barrel file imports",
+        "url": "https://github.com/vercel-labs/agent-skills/tree/main/skills/react-best-practices/rules/bundle-barrel-imports.md"
+      }
+    ],
+    "smellCode": "import { Button } from \"@ui-kit\";",
+    "example": "// Bad: the barrel index re-exports every module in the package.\nimport { Button } from \"@ui-kit\";\n\n// Good: the bundler loads only the Button module.\nimport { Button } from \"@ui-kit/button\";",
+    "exampleLang": "js"
+  },
+  {
+    "id": "D-01",
+    "title": "Parallel independent fetches",
+    "severity": "High",
+    "category": "network",
+    "smell": true,
+    "smellText": "Sequential awaits that could run in parallel",
+    "summary": "Independent requests that run one after another add full network latency per request.",
+    "why": "A waterfall means every sequential await adds a full round trip. If three fetches do not depend on each other, running them one at a time takes three times longer than running them together.",
+    "how": [
+      "Run independent fetches with Promise.all.",
+      "Check cheap synchronous conditions before awaiting (see D-03).",
+      "Run partial dependencies by starting the shared promise early and awaiting it in each branch.",
+      "Check cheap synchronous conditions before awaiting a remote value."
+    ],
+    "bullets": [
+      "Waterfall: requests that run one after another because each waits for the one before. [Definition](glossary.md)"
+    ],
+    "verify": "The network tab shows the fetches overlapping, and total wait drops to the slowest one.",
+    "links": [
+      {
+        "kind": "docs",
+        "label": "web.dev: fetch waterfalls",
+        "url": "https://web.dev/articles/fetch-waterfalls"
+      },
+      {
+        "kind": "docs",
+        "label": "Vercel: react-best-practices async rules",
+        "url": "https://github.com/vercel-labs/agent-skills/tree/main/skills/react-best-practices"
+      }
+    ],
+    "smellCode": "const user = await fetchUser();\nconst cart = await fetchCart();",
+    "example": "// Bad: three round trips, one after another.\nconst user = await fetchUser();\nconst cart = await fetchCart();\nconst posts = await fetchPosts();\n\n// Good: one round trip worth of waiting.\nconst [user, cart, posts] = await Promise.all([\n  fetchUser(),\n  fetchCart(),\n  fetchPosts(),\n]);"
+  },
+  {
+    "id": "D-02",
+    "title": "Cache and dedupe data fetching",
+    "severity": "Medium",
+    "category": "network",
+    "smell": false,
+    "summary": "The same request fires again and again, or every mount refetches.",
+    "why": "Duplicate requests waste bandwidth and make the UI flash between loading states. A cache keeps one in-flight request per key and reuses the result.",
+    "how": [
+      "Use TanStack Query or SWR. They dedupe in-flight requests, cache responses, and refetch on your schedule.",
+      "Set staleTime so fresh data is not refetched on every mount.",
+      "If you fetch by hand, cache the promise, not just the result, so concurrent callers share one request."
+    ],
+    "bullets": [
+      "Dedupe: two callers of the same key share one request. [Definition](glossary.md)",
+      "staleTime: how long cached data counts as fresh. [Definition](glossary.md)"
+    ],
+    "verify": "The network tab shows one request for N callers.",
+    "links": [
+      {
+        "kind": "docs",
+        "label": "TanStack Query",
+        "url": "https://tanstack.com/query"
+      },
+      {
+        "kind": "docs",
+        "label": "SWR",
+        "url": "https://swr.vercel.app/"
+      }
+    ]
+  },
+  {
+    "id": "D-03",
+    "title": "Check cheap conditions before await",
+    "severity": "Medium",
+    "category": "network",
+    "smell": true,
+    "smellText": "Awaiting a remote value before checking a cheap local condition",
+    "summary": "An await can run a full network round trip even when a cheap local check already fails.",
+    "why": "`const flag = await getFlag(); if (flag && localCheck)` always pays for the async call. `if (localCheck) { const flag = await getFlag(); ... }` skips the call entirely when the local check fails. On the cold path that removes the whole request.",
+    "how": [
+      "Check cheap synchronous conditions first, before the await.",
+      "Start shared async work early only when every branch needs it.",
+      "Keep the original order when the local check is expensive or depends on the fetched value."
+    ],
+    "bullets": [
+      "Await: pause until a promise settles. [Definition](glossary.md)"
+    ],
+    "verify": "The network tab shows zero requests when the local check fails.",
+    "links": [
+      {
+        "kind": "docs",
+        "label": "Vercel: check cheap conditions before async flags",
+        "url": "https://github.com/vercel-labs/agent-skills/tree/main/skills/react-best-practices/rules/async-cheap-condition-before-await.md"
+      }
+    ],
+    "smellCode": "const flag = await getFlag();\nif (flag && localCheck) { ... }",
+    "example": "// Bad: the request runs even when localCheck is false.\nconst flag = await getFlag();\nif (flag && localCheck) {\n  loadFeature();\n}\n\n// Good: the request runs only when every local check passed.\nif (localCheck) {\n  const flag = await getFlag();\n  if (flag) {\n    loadFeature();\n  }\n}"
+  },
+  {
     "id": "M-01",
     "title": "Core Web Vitals",
     "severity": "Medium",
@@ -382,6 +591,64 @@
       }
     ],
     "example": "// Bad: the click handler blocks the page.\nfunction onClick() {\n  const rows = [];\n  for (let i = 0; i < 100000; i++) {\n    rows.push(heavyWork(i));\n  }\n  setRows(rows);\n}\n\n// Good: chunk the work so the page stays responsive.\nfunction onClick() {\n  const rows = [];\n  let i = 0;\n  function nextChunk() {\n    const end = Math.min(i + 1000, 100000);\n    for (; i < end; i++) {\n      rows.push(heavyWork(i));\n    }\n    setRows([...rows]);\n    if (i < 100000) {\n      setTimeout(nextChunk, 0);\n    }\n  }\n  nextChunk();\n}"
+  },
+  {
+    "id": "M-03",
+    "title": "Field data over lab scores",
+    "severity": "Medium",
+    "category": "metrics",
+    "smell": false,
+    "summary": "Decisions based only on lab scores, or a lab score gamed for its own sake.",
+    "why": "Lab scores come from one controlled machine. Real users are on other devices and networks. A 99 lab score can still feel slow to real users, and over-optimizing for the lab can hurt the real page.",
+    "how": [
+      "Collect field data with web-vitals and send it to your analytics.",
+      "Check CrUX for the URL or origin to see real-user distributions.",
+      "Set CI thresholds slightly below production targets; CI runners score 10-20 points lower."
+    ],
+    "bullets": [
+      "Lab data: measured on one controlled machine. [Definition](glossary.md)",
+      "Field data: measured by real users in production. [Definition](glossary.md)",
+      "CrUX: Google's real-user data for a URL or origin. [Definition](glossary.md)"
+    ],
+    "verify": "A budget change is justified by field data, not just by the lab score.",
+    "links": [
+      {
+        "kind": "docs",
+        "label": "CrUX",
+        "url": "https://developer.chrome.com/docs/crux"
+      },
+      {
+        "kind": "docs",
+        "label": "web-vitals",
+        "url": "https://www.npmjs.com/package/web-vitals"
+      }
+    ]
+  },
+  {
+    "id": "M-04",
+    "title": "Effect cleanup and memory",
+    "severity": "Medium",
+    "category": "metrics",
+    "smell": false,
+    "summary": "Listeners, timers, and subscriptions that outlive their component.",
+    "why": "A component that unmounts while a listener or interval keeps running leaks work and memory. The leak grows with every mount.",
+    "how": [
+      "Return a cleanup function from every effect that subscribes, listens, or schedules.",
+      "Clear intervals and timeouts in the cleanup.",
+      "Remove window and document listeners in the cleanup.",
+      "Check with heap snapshots: a stable page should not grow memory across mounts."
+    ],
+    "bullets": [
+      "Cleanup: the function an effect returns, run before the next effect or unmount. [Definition](glossary.md)"
+    ],
+    "verify": "Two heap snapshots of the same page show no growth.",
+    "links": [
+      {
+        "kind": "docs",
+        "label": "React docs: effects with cleanup",
+        "url": "https://react.dev/learn/synchronizing-with-effects#effects-with-cleanup"
+      }
+    ]
   },
   {
     "id": "G-01",
@@ -624,5 +891,117 @@
     ],
     "smellCode": "<script src=\"https://analytics.example.com/tracker.js\"></script>",
     "example": "<!-- Bad: blocks the page while it downloads and runs. -->\n<script src=\"https://analytics.example.com/tracker.js\"></script>\n\n<!-- Good: downloads in the background, runs after the page parses. -->\n<script defer src=\"https://analytics.example.com/tracker.js\"></script>"
+  },
+  {
+    "id": "S-01",
+    "title": "Store selectors",
+    "severity": "Medium",
+    "category": "state",
+    "smell": true,
+    "smellText": "Subscribing to more state than the component uses",
+    "summary": "A component re-renders on every store change when it subscribes without a selector.",
+    "why": "The store notifies every subscriber on every change. A selector narrows the subscription to the slice the component uses, and many stores memoize the result so unchanged slices do not re-render.",
+    "how": [
+      "Zustand: useStore((state) => state.count), not useStore().",
+      "Redux: useSelector with the exact slice, not the whole state.",
+      "Subscribe to derived booleans, not raw values: isCartEmpty = (s) => s.cart.length === 0, not s.cart."
+    ],
+    "bullets": [
+      "Selector: a function that picks the slice of state a component reads. [Definition](glossary.md)"
+    ],
+    "verify": "The Profiler shows one re-render per slice change, not per store change.",
+    "links": [
+      {
+        "kind": "docs",
+        "label": "Zustand selectors",
+        "url": "https://zustand.docs.pmnd.rs/guides/using-slices"
+      },
+      {
+        "kind": "docs",
+        "label": "Redux useSelector",
+        "url": "https://react-redux.js.org/api/hooks#useselector"
+      }
+    ],
+    "smellCode": "const state = useStore();",
+    "example": "// Bad: subscribes to the whole store. Any change re-renders.\nconst count = useStore();\n\n// Good: subscribes to one slice. Other changes do not re-render.\nconst count = useStore((state) => state.count);"
+  },
+  {
+    "id": "S-02",
+    "title": "Derive during render, not in effects",
+    "severity": "Medium",
+    "category": "state",
+    "smell": true,
+    "smellText": "Derived state computed in useEffect",
+    "summary": "Computing a value in an effect means a wasted render and an extra render.",
+    "why": "The effect runs after the paint, updates state, and paints again. Computing the same value during render gives the right answer on the first paint with zero extra renders.",
+    "how": [
+      "Compute derived values in the render body, or with useMemo for expensive work.",
+      "Adjust state during render with a setState call of the adjust-when-rendering pattern only when a prop changed and you must keep it in sync.",
+      "Do not fetch-then-set derived state in an effect when the value can be computed."
+    ],
+    "verify": "The Profiler shows one render instead of two for the same change.",
+    "links": [
+      {
+        "kind": "docs",
+        "label": "React docs: you might not need an effect",
+        "url": "https://react.dev/learn/you-might-not-need-an-effect"
+      }
+    ],
+    "smellCode": "const [fullName, setFullName] = useState(\"\");\nuseEffect(() => setFullName(`${first} ${last}`), [first, last]);",
+    "example": "// Bad: an effect updates state after the first paint.\nuseEffect(() => setFullName(`${first} ${last}`), [first, last]);\n\n// Good: computed on the first paint, no effect needed.\nconst fullName = `${first} ${last}`;"
+  },
+  {
+    "id": "S-03",
+    "title": "Lazy state initialization",
+    "severity": "Medium",
+    "category": "state",
+    "smell": false,
+    "summary": "Expensive initializer work runs on every render.",
+    "why": "useState(expression) evaluates the expression on every render even though the result is used only on the first. useState(() => expression) runs it once.",
+    "how": [
+      "Pass a function to useState when the initial value is expensive: JSON.parse, localStorage reads, or a big computation.",
+      "The function runs once, on first render."
+    ],
+    "verify": "The expensive code runs once per mount, not per render.",
+    "links": [
+      {
+        "kind": "docs",
+        "label": "React docs: lazy initial state",
+        "url": "https://react.dev/reference/react/useState#avoiding-recreating-the-initial-state"
+      }
+    ],
+    "example": "// Bad: parses localStorage on every render.\nconst [config] = useState(JSON.parse(localStorage.getItem(\"config\")));\n\n// Good: parses once, on first render.\nconst [config] = useState(() => JSON.parse(localStorage.getItem(\"config\")));"
+  },
+  {
+    "id": "S-04",
+    "title": "Transitions for non-urgent updates",
+    "severity": "Medium",
+    "category": "state",
+    "smell": false,
+    "summary": "Expensive updates block input because they all render at full priority.",
+    "why": "The browser must finish a render before answering the next interaction. An expensive update like filtering a large list blocks typing. startTransition marks the update as non-urgent so React keeps the UI responsive and shows the old value until the new one is ready.",
+    "how": [
+      "Wrap the urgent-then-expensive pattern: keep the input update urgent, wrap the list update in startTransition.",
+      "useDeferredValue for the value that drives the expensive render.",
+      "Show the pending state from useTransition so the UI explains the delay."
+    ],
+    "bullets": [
+      "startTransition: mark an update as non-urgent. [Definition](glossary.md)",
+      "useDeferredValue: defer a value, not a whole update. [Definition](glossary.md)"
+    ],
+    "verify": "Typing stays responsive while the filtered list catches up. INP improves.",
+    "links": [
+      {
+        "kind": "docs",
+        "label": "React docs: startTransition",
+        "url": "https://react.dev/reference/react/startTransition"
+      },
+      {
+        "kind": "docs",
+        "label": "React docs: useDeferredValue",
+        "url": "https://react.dev/reference/react/useDeferredValue"
+      }
+    ],
+    "example": "// Bad: the list update has the same priority as the keystroke.\n<input value={query} onChange={(e) => {\n  setQuery(e.target.value);\n  setFiltered(filter(e.target.value));\n}} />\n\n// Good: the keystroke stays urgent, the list render does not.\nconst [isPending, startTransition] = useTransition();\n<input value={query} onChange={(e) => {\n  setQuery(e.target.value);\n  startTransition(() => setFiltered(filter(e.target.value)));\n}} />"
   }
 ]

@@ -340,11 +340,69 @@ You now have a list of problems. Fix the High items below.
 - 📖 [react-window](https://react-window.vercel.app/)
 - 📖 [TanStack Virtual](https://tanstack.com/virtual)
 
+### 8. Inline components [High]
+
+- [ ] A component defined inside a component unmounts its children on every render.
+
+- Smell: a `function`, `const`, or arrow component declared inside the render body of another component.
+
+  _Why:_
+  > Each render creates a new component type. React sees a different type, throws away the old subtree, and builds a new one. State resets and the page re-renders far more than needed.
+
+  _How:_
+  > - Define components at module scope, never inside another component.
+  > - If a component needs props, pass them. Do not close over local values by defining it inline.
+
+  ```jsx
+  // Bad: Inner is a new component type every render.
+  // React unmounts and remounts it each time.
+  function Parent() {
+    const Inner = () => <span>hi</span>;
+    return <Inner />;
+  }
+
+  // Good: Inner lives at module scope. Same type every render.
+  function Inner() {
+    return <span>hi</span>;
+  }
+
+  function Parent() {
+    return <Inner />;
+  }
+  ```
+
+  The fix is not memo. The fix is moving the component out of the render body.
+
+- Verify: The Profiler shows no full remounts on parent re-renders.
+
+- 📖 [React docs: don't define components inside components](https://react.dev/learn/your-first-component#defining-and-using-a-component)
+
+### 9. Debounce high-frequency input [Medium]
+
+- [ ] Every keystroke or scroll event triggers a state update or network call.
+
+- Debounce: run the update after a pause in events. [Definition](glossary.md)
+- Throttle: run the update at most once per time window. [Definition](glossary.md)
+
+  _Why:_
+  > Each state update triggers a render. Typing, scrolling, and resizing fire dozens of events per second, so raw updates make the page janky.
+
+  _How:_
+  > - Debounce search input: wait 150-300 ms after the last keystroke before updating.
+  > - Throttle scroll and resize handlers so they run at most once per frame.
+  > - Add { passive: true } to scroll, wheel, and touch listeners.
+  > - Use requestIdleCallback to defer work that is not urgent.
+
+- Verify: The Profiler shows one render per pause, not one per event.
+
+- 📖 [web.dev: debounce your input handlers](https://web.dev/articles/optimize-inp#debounce-input-handlers)
+- 📖 [Vercel: use passive event listeners](https://github.com/vercel-labs/agent-skills/tree/main/skills/react-best-practices/rules/client-passive-event-listeners.md)
+
 **[⬆ back to top](#table-of-contents)**
 
 ## C. Load time
 
-### 8. Split the code [High]
+### 10. Split the code [High]
 
 - [ ] All routes in one bundle.
 
@@ -381,7 +439,7 @@ You now have a list of problems. Fix the High items below.
 
 - 📖 [React.lazy docs](https://react.dev/reference/react/lazy)
 
-### 9. Shrink the bundle [Medium]
+### 11. Shrink the bundle [Medium]
 
 - [ ] The bundle is bigger than the app needs.
 
@@ -409,7 +467,7 @@ You now have a list of problems. Fix the High items below.
 - 📖 [vite-bundle-visualizer](https://www.npmjs.com/package/vite-bundle-visualizer)
 - 📖 [webpack-bundle-analyzer](https://www.npmjs.com/package/webpack-bundle-analyzer)
 
-### 10. Images and fonts [Medium]
+### 12. Images and fonts [Medium]
 
 - [ ] Images without lazy loading, or critical fonts loading late.
 
@@ -440,11 +498,157 @@ You now have a list of problems. Fix the High items below.
 - 🛠 [Lighthouse guide](guides/lighthouse.md)
 - 📖 [react-intersection-observer](https://github.com/thebuilder/react-intersection-observer)
 
+### 13. Preload and preconnect [Medium]
+
+- [ ] Critical resources discovered too late, or connections opened only when needed.
+
+- Preload: download a critical resource early. [Definition](glossary.md)
+- Preconnect: open a connection to an origin before it is needed. [Definition](glossary.md)
+
+  _Why:_
+  > Preload starts the download before the code asks for the resource. Preconnect opens the connection early. Both shorten the critical path.
+
+  _How:_
+  > - Add `<link rel="preload">` for the resource that becomes LCP; the image, font, or script the first screen needs.
+  > - Add `<link rel="preconnect">` to the origins the page needs early, like a font CDN.
+  > - Prefetch links the user will likely click next.
+
+  ```jsx
+  <!-- Bad: the LCP image is discovered only when the page parses it. -->
+  <img src="hero.webp" />
+
+  <!-- Good: the download starts before the parser reaches it. -->
+  <link rel="preload" as="image" href="hero.webp" />
+  <img src="hero.webp" />
+  ```
+
+- Verify: Lighthouse resource-hint audits pass, and LCP improves.
+
+- 📖 [web.dev: preload and preconnect](https://web.dev/articles/uses-rel-preload)
+
+### 14. Barrel imports [Medium]
+
+- [ ] Importing from a barrel file can load whole libraries you never use.
+
+- Barrel file: an index that re-exports many modules. [Definition](glossary.md)
+
+  _Why:_
+  > A barrel file re-exports many modules from one index. Importing from it makes the bundler pull in modules you never use. Icon and component libraries can re-export thousands of modules, adding hundreds of milliseconds to the import and bloating the bundle.
+
+  _How:_
+  > - Import from the exact module path, not the barrel index.
+  > - For large libraries, use subpath imports or the bundler's optimizePackageImports.
+  > - Check the bundle visualizer for whole libraries appearing on one import.
+
+  ```js
+  // Bad: the barrel index re-exports every module in the package.
+  import { Button } from "@ui-kit";
+
+  // Good: the bundler loads only the Button module.
+  import { Button } from "@ui-kit/button";
+  ```
+
+- Verify: The bundle visualizer no longer shows the whole library for one import.
+
+- 📖 [Vercel: avoid barrel file imports](https://github.com/vercel-labs/agent-skills/tree/main/skills/react-best-practices/rules/bundle-barrel-imports.md)
+
 **[⬆ back to top](#table-of-contents)**
 
-## D. What users feel
+## D. Data and network
 
-### 11. Core Web Vitals [Medium]
+### 15. Parallel independent fetches [High]
+
+- [ ] Independent requests that run one after another add full network latency per request.
+
+- Waterfall: requests that run one after another because each waits for the one before. [Definition](glossary.md)
+
+  _Why:_
+  > A waterfall means every sequential await adds a full round trip. If three fetches do not depend on each other, running them one at a time takes three times longer than running them together.
+
+  _How:_
+  > - Run independent fetches with Promise.all.
+  > - Check cheap synchronous conditions before awaiting (see D-03).
+  > - Run partial dependencies by starting the shared promise early and awaiting it in each branch.
+  > - Check cheap synchronous conditions before awaiting a remote value.
+
+  ```jsx
+  // Bad: three round trips, one after another.
+  const user = await fetchUser();
+  const cart = await fetchCart();
+  const posts = await fetchPosts();
+
+  // Good: one round trip worth of waiting.
+  const [user, cart, posts] = await Promise.all([
+    fetchUser(),
+    fetchCart(),
+    fetchPosts(),
+  ]);
+  ```
+
+- Verify: The network tab shows the fetches overlapping, and total wait drops to the slowest one.
+
+- 📖 [web.dev: fetch waterfalls](https://web.dev/articles/fetch-waterfalls)
+- 📖 [Vercel: react-best-practices async rules](https://github.com/vercel-labs/agent-skills/tree/main/skills/react-best-practices)
+
+### 16. Cache and dedupe data fetching [Medium]
+
+- [ ] The same request fires again and again, or every mount refetches.
+
+- Dedupe: two callers of the same key share one request. [Definition](glossary.md)
+- staleTime: how long cached data counts as fresh. [Definition](glossary.md)
+
+  _Why:_
+  > Duplicate requests waste bandwidth and make the UI flash between loading states. A cache keeps one in-flight request per key and reuses the result.
+
+  _How:_
+  > - Use TanStack Query or SWR. They dedupe in-flight requests, cache responses, and refetch on your schedule.
+  > - Set staleTime so fresh data is not refetched on every mount.
+  > - If you fetch by hand, cache the promise, not just the result, so concurrent callers share one request.
+
+- Verify: The network tab shows one request for N callers.
+
+- 📖 [TanStack Query](https://tanstack.com/query)
+- 📖 [SWR](https://swr.vercel.app/)
+
+### 17. Check cheap conditions before await [Medium]
+
+- [ ] An await can run a full network round trip even when a cheap local check already fails.
+
+- Await: pause until a promise settles. [Definition](glossary.md)
+
+  _Why:_
+  > `const flag = await getFlag(); if (flag && localCheck)` always pays for the async call. `if (localCheck) { const flag = await getFlag(); ... }` skips the call entirely when the local check fails. On the cold path that removes the whole request.
+
+  _How:_
+  > - Check cheap synchronous conditions first, before the await.
+  > - Start shared async work early only when every branch needs it.
+  > - Keep the original order when the local check is expensive or depends on the fetched value.
+
+  ```jsx
+  // Bad: the request runs even when localCheck is false.
+  const flag = await getFlag();
+  if (flag && localCheck) {
+    loadFeature();
+  }
+
+  // Good: the request runs only when every local check passed.
+  if (localCheck) {
+    const flag = await getFlag();
+    if (flag) {
+      loadFeature();
+    }
+  }
+  ```
+
+- Verify: The network tab shows zero requests when the local check fails.
+
+- 📖 [Vercel: check cheap conditions before async flags](https://github.com/vercel-labs/agent-skills/tree/main/skills/react-best-practices/rules/async-cheap-condition-before-await.md)
+
+**[⬆ back to top](#table-of-contents)**
+
+## E. What users feel
+
+### 18. Core Web Vitals [Medium]
 
 - [ ] No field data and no budgets for LCP, INP, CLS.
 
@@ -465,7 +669,7 @@ You now have a list of problems. Fix the High items below.
 - 📖 [web-vitals package](https://www.npmjs.com/package/web-vitals)
 - 📖 [Lighthouse CI](https://github.com/GoogleChrome/lighthouse-ci)
 
-### 12. Long tasks [Medium]
+### 19. Long tasks [Medium]
 
 - [ ] Work on the main thread that blocks the screen.
 
@@ -514,11 +718,51 @@ You now have a list of problems. Fix the High items below.
 
 - 📖 [Optimize long tasks](https://web.dev/articles/optimize-long-tasks)
 
+### 20. Field data over lab scores [Medium]
+
+- [ ] Decisions based only on lab scores, or a lab score gamed for its own sake.
+
+- Lab data: measured on one controlled machine. [Definition](glossary.md)
+- Field data: measured by real users in production. [Definition](glossary.md)
+- CrUX: Google's real-user data for a URL or origin. [Definition](glossary.md)
+
+  _Why:_
+  > Lab scores come from one controlled machine. Real users are on other devices and networks. A 99 lab score can still feel slow to real users, and over-optimizing for the lab can hurt the real page.
+
+  _How:_
+  > - Collect field data with web-vitals and send it to your analytics.
+  > - Check CrUX for the URL or origin to see real-user distributions.
+  > - Set CI thresholds slightly below production targets; CI runners score 10-20 points lower.
+
+- Verify: A budget change is justified by field data, not just by the lab score.
+
+- 📖 [CrUX](https://developer.chrome.com/docs/crux)
+- 📖 [web-vitals](https://www.npmjs.com/package/web-vitals)
+
+### 21. Effect cleanup and memory [Medium]
+
+- [ ] Listeners, timers, and subscriptions that outlive their component.
+
+- Cleanup: the function an effect returns, run before the next effect or unmount. [Definition](glossary.md)
+
+  _Why:_
+  > A component that unmounts while a listener or interval keeps running leaks work and memory. The leak grows with every mount.
+
+  _How:_
+  > - Return a cleanup function from every effect that subscribes, listens, or schedules.
+  > - Clear intervals and timeouts in the cleanup.
+  > - Remove window and document listeners in the cleanup.
+  > - Check with heap snapshots: a stable page should not grow memory across mounts.
+
+- Verify: Two heap snapshots of the same page show no growth.
+
+- 📖 [React docs: effects with cleanup](https://react.dev/learn/synchronizing-with-effects#effects-with-cleanup)
+
 **[⬆ back to top](#table-of-contents)**
 
-## E. Guard rails
+## F. Guard rails
 
-### 13. Lint with autofix [High]
+### 22. Lint with autofix [High]
 
 - [ ] Broken hook rules and dependency arrays are invisible while typing.
 
@@ -556,7 +800,7 @@ You now have a list of problems. Fix the High items below.
 - 📖 [eslint-plugin-react-hooks](https://www.npmjs.com/package/eslint-plugin-react-hooks)
 - 📖 [eslint-plugin-react-compiler](https://www.npmjs.com/package/eslint-plugin-react-compiler)
 
-### 14. React Compiler [Medium]
+### 23. React Compiler [Medium]
 
 - [ ] Manual memoization is error-prone and noisy.
 
@@ -570,7 +814,7 @@ You now have a list of problems. Fix the High items below.
 
 - 📖 [React Compiler docs](https://react.dev/learn/react-compiler)
 
-### 15. Perf tests [Medium]
+### 24. Perf tests [Medium]
 
 - [ ] Perf fixes silently regress later.
 
@@ -611,7 +855,7 @@ You now have a list of problems. Fix the High items below.
 
 - 📖 [React.Profiler docs](https://react.dev/reference/react/Profiler)
 
-### 16. CI gates [Medium]
+### 25. CI gates [Medium]
 
 - [ ] A slow change can merge without anyone noticing.
 
@@ -632,9 +876,9 @@ You now have a list of problems. Fix the High items below.
 
 **[⬆ back to top](#table-of-contents)**
 
-## F. Front-end (non-React)
+## G. Front-end (non-React)
 
-### 17. Image formats and sizes [Medium]
+### 26. Image formats and sizes [Medium]
 
 - [ ] Images in the wrong format, or one size for every screen.
 
@@ -664,7 +908,7 @@ You now have a list of problems. Fix the High items below.
 
 - 📖 [web.dev image guidance](https://web.dev/learn/images)
 
-### 18. Font delivery [Medium]
+### 27. Font delivery [Medium]
 
 - [ ] Fonts that block text, or load more glyphs than the page needs.
 
@@ -697,7 +941,7 @@ You now have a list of problems. Fix the High items below.
 
 - 📖 [web.dev font best practices](https://web.dev/articles/font-best-practices)
 
-### 19. CSS delivery [Medium]
+### 28. CSS delivery [Medium]
 
 - [ ] Render-blocking CSS, or CSS the page never uses.
 
@@ -724,7 +968,7 @@ You now have a list of problems. Fix the High items below.
 
 - 📖 [web.dev render-blocking resources](https://web.dev/articles/render-blocking-resources)
 
-### 20. Delivery: caching and compression [Medium]
+### 29. Delivery: caching and compression [Medium]
 
 - [ ] No compression, no cache headers, or no CDN.
 
@@ -750,7 +994,7 @@ You now have a list of problems. Fix the High items below.
 
 - 📖 [web.dev caching guidance](https://web.dev/articles/http-cache)
 
-### 21. Third-party scripts [Medium]
+### 30. Third-party scripts [Medium]
 
 - [ ] Heavy third-party scripts that block the main thread.
 
@@ -776,6 +1020,119 @@ You now have a list of problems. Fix the High items below.
 
 - 📖 [web.dev third-party guidance](https://web.dev/articles/third-party-javascript)
 - 📖 [Partytown](https://partytown.builder.io/)
+
+**[⬆ back to top](#table-of-contents)**
+
+## H. State management
+
+### 31. Store selectors [Medium]
+
+- [ ] A component re-renders on every store change when it subscribes without a selector.
+
+- Selector: a function that picks the slice of state a component reads. [Definition](glossary.md)
+
+  _Why:_
+  > The store notifies every subscriber on every change. A selector narrows the subscription to the slice the component uses, and many stores memoize the result so unchanged slices do not re-render.
+
+  _How:_
+  > - Zustand: useStore((state) => state.count), not useStore().
+  > - Redux: useSelector with the exact slice, not the whole state.
+  > - Subscribe to derived booleans, not raw values: isCartEmpty = (s) => s.cart.length === 0, not s.cart.
+
+  ```jsx
+  // Bad: subscribes to the whole store. Any change re-renders.
+  const count = useStore();
+
+  // Good: subscribes to one slice. Other changes do not re-render.
+  const count = useStore((state) => state.count);
+  ```
+
+- Verify: The Profiler shows one re-render per slice change, not per store change.
+
+- 📖 [Zustand selectors](https://zustand.docs.pmnd.rs/guides/using-slices)
+- 📖 [Redux useSelector](https://react-redux.js.org/api/hooks#useselector)
+
+### 32. Derive during render, not in effects [Medium]
+
+- [ ] Computing a value in an effect means a wasted render and an extra render.
+
+  _Why:_
+  > The effect runs after the paint, updates state, and paints again. Computing the same value during render gives the right answer on the first paint with zero extra renders.
+
+  _How:_
+  > - Compute derived values in the render body, or with useMemo for expensive work.
+  > - Adjust state during render with a setState call of the adjust-when-rendering pattern only when a prop changed and you must keep it in sync.
+  > - Do not fetch-then-set derived state in an effect when the value can be computed.
+
+  ```jsx
+  // Bad: an effect updates state after the first paint.
+  useEffect(() => setFullName(`${first} ${last}`), [first, last]);
+
+  // Good: computed on the first paint, no effect needed.
+  const fullName = `${first} ${last}`;
+  ```
+
+- Verify: The Profiler shows one render instead of two for the same change.
+
+- 📖 [React docs: you might not need an effect](https://react.dev/learn/you-might-not-need-an-effect)
+
+### 33. Lazy state initialization [Medium]
+
+- [ ] Expensive initializer work runs on every render.
+
+  _Why:_
+  > useState(expression) evaluates the expression on every render even though the result is used only on the first. useState(() => expression) runs it once.
+
+  _How:_
+  > - Pass a function to useState when the initial value is expensive: JSON.parse, localStorage reads, or a big computation.
+  > - The function runs once, on first render.
+
+  ```jsx
+  // Bad: parses localStorage on every render.
+  const [config] = useState(JSON.parse(localStorage.getItem("config")));
+
+  // Good: parses once, on first render.
+  const [config] = useState(() => JSON.parse(localStorage.getItem("config")));
+  ```
+
+- Verify: The expensive code runs once per mount, not per render.
+
+- 📖 [React docs: lazy initial state](https://react.dev/reference/react/useState#avoiding-recreating-the-initial-state)
+
+### 34. Transitions for non-urgent updates [Medium]
+
+- [ ] Expensive updates block input because they all render at full priority.
+
+- startTransition: mark an update as non-urgent. [Definition](glossary.md)
+- useDeferredValue: defer a value, not a whole update. [Definition](glossary.md)
+
+  _Why:_
+  > The browser must finish a render before answering the next interaction. An expensive update like filtering a large list blocks typing. startTransition marks the update as non-urgent so React keeps the UI responsive and shows the old value until the new one is ready.
+
+  _How:_
+  > - Wrap the urgent-then-expensive pattern: keep the input update urgent, wrap the list update in startTransition.
+  > - useDeferredValue for the value that drives the expensive render.
+  > - Show the pending state from useTransition so the UI explains the delay.
+
+  ```jsx
+  // Bad: the list update has the same priority as the keystroke.
+  <input value={query} onChange={(e) => {
+    setQuery(e.target.value);
+    setFiltered(filter(e.target.value));
+  }} />
+
+  // Good: the keystroke stays urgent, the list render does not.
+  const [isPending, startTransition] = useTransition();
+  <input value={query} onChange={(e) => {
+    setQuery(e.target.value);
+    startTransition(() => setFiltered(filter(e.target.value)));
+  }} />
+  ```
+
+- Verify: Typing stays responsive while the filtered list catches up. INP improves.
+
+- 📖 [React docs: startTransition](https://react.dev/reference/react/startTransition)
+- 📖 [React docs: useDeferredValue](https://react.dev/reference/react/useDeferredValue)
 
 **[⬆ back to top](#table-of-contents)**
 <!-- CHECKLIST:END -->
@@ -808,29 +1165,71 @@ You now have a list of problems. Fix the High items below.
   const sorted = items.sort((a, b) => a - b); // runs on every render
   ```
 
-- [ ] All routes in one bundle -> [item 8](#8-split-the-code-high)
+- [ ] Component defined inside another component -> [item 8](#8-inline-components-high)
+
+  ```jsx
+  function Parent() {
+    const Inner = () => <span />;
+    return <Inner />;
+  }
+  ```
+
+- [ ] All routes in one bundle -> [item 10](#10-split-the-code-high)
 
   ```jsx
   import Settings from "./Settings";
   import Profile from "./Profile"; // both load on first visit
   ```
 
-- [ ] Images without lazy loading -> [item 10](#10-images-and-fonts-medium)
+- [ ] Images without lazy loading -> [item 12](#12-images-and-fonts-medium)
 
   ```jsx
   <img src="hero.jpg" />
   ```
 
-- [ ] Images served too big for the screen -> [item 17](#17-image-formats-and-sizes-medium)
+- [ ] Importing from a barrel file instead of the module -> [item 14](#14-barrel-imports-medium)
+
+  ```jsx
+  import { Button } from "@ui-kit";
+  ```
+
+- [ ] Sequential awaits that could run in parallel -> [item 15](#15-parallel-independent-fetches-high)
+
+  ```jsx
+  const user = await fetchUser();
+  const cart = await fetchCart();
+  ```
+
+- [ ] Awaiting a remote value before checking a cheap local condition -> [item 17](#17-check-cheap-conditions-before-await-medium)
+
+  ```jsx
+  const flag = await getFlag();
+  if (flag && localCheck) { ... }
+  ```
+
+- [ ] Images served too big for the screen -> [item 26](#26-image-formats-and-sizes-medium)
 
   ```jsx
   <img src="hero.jpg" />
   ```
 
-- [ ] Heavy third-party scripts on every page -> [item 21](#21-third-party-scripts-medium)
+- [ ] Heavy third-party scripts on every page -> [item 30](#30-third-party-scripts-medium)
 
   ```jsx
   <script src="https://analytics.example.com/tracker.js"></script>
+  ```
+
+- [ ] Subscribing to more state than the component uses -> [item 31](#31-store-selectors-medium)
+
+  ```jsx
+  const state = useStore();
+  ```
+
+- [ ] Derived state computed in useEffect -> [item 32](#32-derive-during-render-not-in-effects-medium)
+
+  ```jsx
+  const [fullName, setFullName] = useState("");
+  useEffect(() => setFullName(`${first} ${last}`), [first, last]);
   ```
 <!-- SMELLS:END -->
 

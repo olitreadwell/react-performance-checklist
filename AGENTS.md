@@ -36,6 +36,9 @@ Rules for agents that work in this repository.
   finding, no evidence no finding.
 - Run `npx react-doctor@latest` and `npx react-scan@latest` for the scan.
   Do not write a new scanner.
+- Hand the general web pass to `web-quality-skills` and the deep
+  React/Next pass to the Vercel `react-best-practices` skill. Do not
+  write a new scanner or a new skill.
 - Report findings by checklist ID. Give evidence. No evidence, no finding.
 - When fixing: one finding at a time, highest impact first. Measure
   before and after each fix. Run lint and tests after each fix. Commit

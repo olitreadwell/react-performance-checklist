@@ -13,9 +13,11 @@ const CATEGORIES = [
   { key: "measure", heading: "A. Measure first" },
   { key: "rendering", heading: "B. Fix renders" },
   { key: "load", heading: "C. Load time" },
-  { key: "metrics", heading: "D. What users feel" },
-  { key: "guardrails", heading: "E. Guard rails" },
-  { key: "frontend", heading: "F. Front-end (non-React)" },
+  { key: "network", heading: "D. Data and network" },
+  { key: "metrics", heading: "E. What users feel" },
+  { key: "guardrails", heading: "F. Guard rails" },
+  { key: "frontend", heading: "G. Front-end (non-React)" },
+  { key: "state", heading: "H. State management" },
 ];
 
 function anchorFor(rule, index) {

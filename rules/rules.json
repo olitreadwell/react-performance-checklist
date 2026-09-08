@@ -215,7 +215,8 @@
       }
     ],
     "smellCode": "const sorted = items.sort((a, b) => a - b); // runs on every render",
-    "example": "import { useMemo } from \"react\";\n\n// Bad: the sort runs on every render.\nfunction List({ items }) {\n  const sorted = items.sort((a, b) => a.price - b.price);\n  return (\n    <ul>\n      {sorted.map((item) => (\n        <li key={item.id}>{item.name}</li>\n      ))}\n    </ul>\n  );\n}\n\n// Good: the sort runs only when items change.\nfunction List({ items }) {\n  const sorted = useMemo(\n    () => [...items].sort((a, b) => a.price - b.price),\n    [items]\n  );\n  return (\n    <ul>\n      {sorted.map((item) => (\n        <li key={item.id}>{item.name}</li>\n      ))}\n    </ul>\n  );\n}"
+    "example": "import { useMemo } from \"react\";\n\n// Bad: the sort runs on every render.\nfunction List({ items }) {\n  const sorted = items.sort((a, b) => a.price - b.price);\n  return (\n    <ul>\n      {sorted.map((item) => (\n        <li key={item.id}>{item.name}</li>\n      ))}\n    </ul>\n  );\n}\n\n// Good: the sort runs only when items change identity.\n// The map below still runs on every render. That is the cheap part.\nfunction List({ items }) {\n  const sorted = useMemo(\n    () => [...items].sort((a, b) => a.price - b.price),\n    [items]\n  );\n  return (\n    <ul>\n      {sorted.map((item) => (\n        <li key={item.id}>{item.name}</li>\n      ))}\n    </ul>\n  );\n}",
+    "note": "useMemo does not skip the map. The map still runs on every render, and that is the cheap part: it only builds element objects. useMemo skips the sort, and only when items keeps the same identity. If the parent builds the array inline (a new array every render), the sort runs anyway. If the rows themselves are expensive to re-render, memoize the row at the boundary (see item 4). useMemo does not stop re-renders, it only caches the value."
   },
   {
     "id": "L-01",

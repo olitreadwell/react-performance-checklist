@@ -316,7 +316,8 @@ You now have a list of problems. Fix the High items below.
     );
   }
 
-  // Good: the sort runs only when items change.
+  // Good: the sort runs only when items change identity.
+  // The map below still runs on every render. That is the cheap part.
   function List({ items }) {
     const sorted = useMemo(
       () => [...items].sort((a, b) => a.price - b.price),
@@ -331,6 +332,8 @@ You now have a list of problems. Fix the High items below.
     );
   }
   ```
+
+  useMemo does not skip the map. The map still runs on every render, and that is the cheap part: it only builds element objects. useMemo skips the sort, and only when items keeps the same identity. If the parent builds the array inline (a new array every render), the sort runs anyway. If the rows themselves are expensive to re-render, memoize the row at the boundary (see item 4). useMemo does not stop re-renders, it only caches the value.
 
 - Verify: The flamegraph gets shorter. Typing stays smooth.
 

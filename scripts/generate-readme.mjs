@@ -45,20 +45,13 @@ function renderRule(rule, index) {
     out.push(`  > - ${step}`);
   }
   out.push("");
-  if (rule.codeExample) {
-    out.push("  ```jsx");
-    for (const line of rule.codeExample.split("\n")) {
-      out.push(line ? `  ${line}` : "");
-    }
-    out.push("  ```");
-    out.push("");
-  }
   if (rule.example) {
-    out.push("  ```jsx");
+    const lang = rule.exampleLang ?? "jsx";
+    out.push(`  \`\`\`${lang}`);
     for (const line of rule.example.split("\n")) {
       out.push(line ? `  ${line}` : "");
     }
-    out.push("  ```");
+    out.push("  \`\`\`");
     out.push("");
   }
   if (rule.note) {

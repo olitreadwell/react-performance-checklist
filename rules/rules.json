@@ -93,7 +93,7 @@
       }
     ],
     "smellCode": "onClick={() => ...}\nstyle={{...}}",
-    "codeExample": "// Bad: new function each render\n<Row onClick={() => save()} />\n\n// Good: same function every render\nconst save = useCallback(() => doSave(), []);\n<Row onClick={save} />\n\n// Bad: new object each render\n<Row style={{ color: \"red\" }} />\n\n// Good: same object every render\nconst RED = { color: \"red\" };\n<Row style={RED} />\n\n// Bad: new array each render\n<Row items={[\"a\", \"b\"]} />\n\n// Good: same array every render\nconst ITEMS = [\"a\", \"b\"];\n<Row items={ITEMS} />"
+    "example": "import { memo, useCallback } from \"react\";\n\nconst Row = memo(function Row({ onClick, style, items }) {\n  return (\n    <button onClick={onClick} style={style}>\n      {items.join(\", \")}\n    </button>\n  );\n});\n\n// Bad: a new function, a new object, and a new array every render.\n// memo sees a change every time, so it cannot help.\nfunction Parent() {\n  return (\n    <Row\n      onClick={() => save()}\n      style={{ color: \"red\" }}\n      items={[\"a\", \"b\"]}\n    />\n  );\n}\n\n// Good: hoist the values out. Same identity every render.\nconst RED = { color: \"red\" };\nconst ITEMS = [\"a\", \"b\"];\n\nfunction Parent() {\n  const save = useCallback(() => doSave(), []);\n  return <Row onClick={save} style={RED} items={ITEMS} />;\n}"
   },
   {
     "id": "R-04",
@@ -119,7 +119,8 @@
         "label": "memo docs",
         "url": "https://react.dev/reference/react/memo"
       }
-    ]
+    ],
+    "example": "import { memo } from \"react\";\n\n// Good: the row gets stable props. memo stops re-renders.\nconst Row = memo(function Row({ item }) {\n  return <li>{item.name}</li>;\n});\n\nfunction List({ items }) {\n  return (\n    <ul>\n      {items.map((item) => (\n        <Row key={item.id} item={item} />\n      ))}\n    </ul>\n  );\n}\n\n// Bad: the parent passes an inline function.\n// The prop is new every render, so the memo cannot help.\nfunction List({ items }) {\n  return (\n    <ul>\n      {items.map((item) => (\n        <Row key={item.id} item={item} onClick={() => open(item)} />\n      ))}\n    </ul>\n  );\n}"
   },
   {
     "id": "R-05",
@@ -139,7 +140,7 @@
       "Consumer: any component that reads the context.",
       "What happens: when the context value changes, every consumer re-renders."
     ],
-    "example": "// Before: one context holds everything. Any change re-renders all consumers.\nconst AppContext = createContext({ user, theme, save, logout });\n\n// After: two contexts. A theme change re-renders only theme consumers.\nconst UserContext = createContext(null);\nconst ThemeContext = createContext(\"light\");\n\nfunction App() {\n  const [user, setUser] = useState(null);\n  const [theme, setTheme] = useState(\"light\");\n  return (\n    <UserContext.Provider value={{ user, setUser }}>\n      <ThemeContext.Provider value={{ theme, setTheme }}>\n        <Page />\n      </ThemeContext.Provider>\n    </UserContext.Provider>\n  );\n}",
+    "example": "import { createContext, useContext, useState } from \"react\";\n\n// Before: one context holds everything.\n// Any change re-renders all consumers.\nconst AppContext = createContext({ user, theme, save, logout });\n\n// After: two contexts.\n// A theme change re-renders only theme consumers.\nconst UserContext = createContext(null);\nconst ThemeContext = createContext(\"light\");\n\nfunction App() {\n  const [user, setUser] = useState(null);\n  const [theme, setTheme] = useState(\"light\");\n  return (\n    <UserContext.Provider value={{ user, setUser }}>\n      <ThemeContext.Provider value={{ theme, setTheme }}>\n        <Page />\n      </ThemeContext.Provider>\n    </UserContext.Provider>\n  );\n}\n\n// A consumer reads only what it needs.\nfunction ThemeButton() {\n  const theme = useContext(ThemeContext);\n  return <button className={theme}>Theme</button>;\n}",
     "verify": "In the Profiler, a sibling consumer no longer re-renders.",
     "links": [
       {
@@ -168,7 +169,7 @@
       "Unexpected remount: the component loses its state. Signs: the input loses focus while you type, a checkbox unchecks, the scroll jumps, the Profiler shows a new mount.",
       "How to check: type in a row's input, then reorder the list. If the input loses focus, the row remounted."
     ],
-    "example": "// Give each item an id once, when it is created:\nconst [items, setItems] = useState(() => [\n  { id: crypto.randomUUID(), text: \"first\" },\n  { id: crypto.randomUUID(), text: \"second\" },\n]);\n\n// Add new items the same way:\nsetItems((prev) => [...prev, { id: crypto.randomUUID(), text: \"new\" }]);\n\n// Use the id as the key:\n{items.map((item) => <Row key={item.id} item={item} />)}",
+    "example": "import { useState } from \"react\";\n\n// Give each item an id once, when it is created.\nconst [items, setItems] = useState(() => [\n  { id: crypto.randomUUID(), text: \"first\" },\n  { id: crypto.randomUUID(), text: \"second\" },\n]);\n\n// Add new items the same way.\nsetItems((prev) => [...prev, { id: crypto.randomUUID(), text: \"new\" }]);\n\n// Bad: the index moves between items.\n// React rebuilds the wrong rows and state resets.\n{items.map((item, index) => <Row key={index} item={item} />)}\n\n// Good: the id stays with the item.\n{items.map((item) => <Row key={item.id} item={item} />)}",
     "verify": "No remounts in the Profiler after a reorder.",
     "links": [
       {
@@ -208,7 +209,8 @@
         "url": "https://react-window.vercel.app/"
       }
     ],
-    "smellCode": "const sorted = items.sort((a, b) => a - b); // runs on every render"
+    "smellCode": "const sorted = items.sort((a, b) => a - b); // runs on every render",
+    "example": "import { useMemo } from \"react\";\n\n// Bad: the sort runs on every render.\nfunction List({ items }) {\n  const sorted = items.sort((a, b) => a.price - b.price);\n  return (\n    <ul>\n      {sorted.map((item) => (\n        <li key={item.id}>{item.name}</li>\n      ))}\n    </ul>\n  );\n}\n\n// Good: the sort runs only when items change.\nfunction List({ items }) {\n  const sorted = useMemo(\n    () => [...items].sort((a, b) => a.price - b.price),\n    [items]\n  );\n  return (\n    <ul>\n      {sorted.map((item) => (\n        <li key={item.id}>{item.name}</li>\n      ))}\n    </ul>\n  );\n}"
   },
   {
     "id": "L-01",
@@ -229,7 +231,7 @@
       "How to know you need it: the first load is slow, the bundle is big, or a heavy screen is rarely used.",
       "How to know you went overboard: too many tiny chunks means too many network requests. Split at the route level, not every component. If a chunk is small and rarely changes, leave it in the main bundle."
     ],
-    "example": "import { lazy, Suspense } from \"react\";\n\nconst Settings = lazy(() => import(\"./Settings\"));\n\nfunction App() {\n  return (\n    <Suspense fallback={<p>Loading...</p>}>\n      <Settings />\n    </Suspense>\n  );\n}",
+    "example": "import { lazy, Suspense } from \"react\";\n\n// Load a screen only when the user opens it.\nconst Settings = lazy(() => import(\"./Settings\"));\nconst Profile = lazy(() => import(\"./Profile\"));\n\nfunction App() {\n  return (\n    <Suspense fallback={<p>Loading...</p>}>\n      <Settings />\n      <Profile />\n    </Suspense>\n  );\n}",
     "verify": "The first load downloads fewer bytes.",
     "links": [
       {
@@ -273,7 +275,9 @@
         "label": "webpack-bundle-analyzer",
         "url": "https://www.npmjs.com/package/webpack-bundle-analyzer"
       }
-    ]
+    ],
+    "example": "// Bad: imports the whole package.\nimport _ from \"lodash\";\n\n// Good: imports only the function you use.\nimport debounce from \"lodash/debounce\";",
+    "exampleLang": "js"
   },
   {
     "id": "L-03",
@@ -300,7 +304,8 @@
         "url": "guides/lighthouse.md"
       }
     ],
-    "smellCode": "<img src=\"hero.jpg\" />"
+    "smellCode": "<img src=\"hero.jpg\" />",
+    "example": "// Bad: every image loads on page open.\n<img src=\"hero.jpg\" />\n\n// Good: below-the-fold images load only when near the screen.\n<img\n  src=\"hero.jpg\"\n  loading=\"lazy\"\n  sizes=\"(max-width: 600px) 100vw, 50vw\"\n/>"
   },
   {
     "id": "M-01",
@@ -364,7 +369,8 @@
         "label": "Optimize long tasks",
         "url": "https://web.dev/articles/optimize-long-tasks"
       }
-    ]
+    ],
+    "example": "// Bad: the click handler blocks the page.\nfunction onClick() {\n  const rows = [];\n  for (let i = 0; i < 100000; i++) {\n    rows.push(heavyWork(i));\n  }\n  setRows(rows);\n}\n\n// Good: chunk the work so the page stays responsive.\nfunction onClick() {\n  const rows = [];\n  let i = 0;\n  function nextChunk() {\n    const end = Math.min(i + 1000, 100000);\n    for (; i < end; i++) {\n      rows.push(heavyWork(i));\n    }\n    setRows([...rows]);\n    if (i < 100000) {\n      setTimeout(nextChunk, 0);\n    }\n  }\n  nextChunk();\n}"
   },
   {
     "id": "G-01",
@@ -393,7 +399,9 @@
         "label": "eslint-plugin-react-compiler",
         "url": "https://www.npmjs.com/package/eslint-plugin-react-compiler"
       }
-    ]
+    ],
+    "example": "// eslint.config.js\nimport reactHooks from \"eslint-plugin-react-hooks\";\nimport reactCompiler from \"eslint-plugin-react-compiler\";\n\nexport default [\n  {\n    plugins: {\n      \"react-hooks\": reactHooks,\n      \"react-compiler\": reactCompiler,\n    },\n    rules: {\n      \"react-hooks/rules-of-hooks\": \"error\",\n      \"react-hooks/exhaustive-deps\": \"error\",\n      \"react-compiler/react-compiler\": \"error\",\n    },\n  },\n];",
+    "exampleLang": "js"
   },
   {
     "id": "G-02",
@@ -438,7 +446,8 @@
         "label": "React.Profiler docs",
         "url": "https://react.dev/reference/react/Profiler"
       }
-    ]
+    ],
+    "example": "// test/perf-regression.test.jsx\nimport { fireEvent, render } from \"@testing-library/react\";\nimport { memo, useCallback, useState } from \"react\";\nimport { expect, it, vi } from \"vitest\";\n\nconst renderRow = vi.fn(({ onClick }) => (\n  <button onClick={onClick}>bump</button>\n));\nconst Row = memo(renderRow);\n\nit(\"keeps the memoized row still when the callback is stable\", () => {\n  function Parent() {\n    const [, setCount] = useState(0);\n    const bump = useCallback(() => setCount((c) => c + 1), []);\n    return <Row onClick={bump} />;\n  }\n\n  render(<Parent />);\n  fireEvent.click(document.querySelector(\"button\"));\n  expect(renderRow).toHaveBeenCalledTimes(1);\n});"
   },
   {
     "id": "G-04",

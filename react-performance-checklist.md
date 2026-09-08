@@ -103,26 +103,36 @@ You now have a list of problems. Fix the High items below.
   > - Or turn on React Compiler and let it do this for you.
 
   ```jsx
-  // Bad: new function each render
-  <Row onClick={() => save()} />
+  import { memo, useCallback } from "react";
 
-  // Good: same function every render
-  const save = useCallback(() => doSave(), []);
-  <Row onClick={save} />
+  const Row = memo(function Row({ onClick, style, items }) {
+    return (
+      <button onClick={onClick} style={style}>
+        {items.join(", ")}
+      </button>
+    );
+  });
 
-  // Bad: new object each render
-  <Row style={{ color: "red" }} />
+  // Bad: a new function, a new object, and a new array every render.
+  // memo sees a change every time, so it cannot help.
+  function Parent() {
+    return (
+      <Row
+        onClick={() => save()}
+        style={{ color: "red" }}
+        items={["a", "b"]}
+      />
+    );
+  }
 
-  // Good: same object every render
+  // Good: hoist the values out. Same identity every render.
   const RED = { color: "red" };
-  <Row style={RED} />
-
-  // Bad: new array each render
-  <Row items={["a", "b"]} />
-
-  // Good: same array every render
   const ITEMS = ["a", "b"];
-  <Row items={ITEMS} />
+
+  function Parent() {
+    const save = useCallback(() => doSave(), []);
+    return <Row onClick={save} style={RED} items={ITEMS} />;
+  }
   ```
 
   Looks bad but fine, leave it alone:
@@ -152,6 +162,37 @@ You now have a list of problems. Fix the High items below.
   > - Bad: memo on a component whose parent passes inline props. The memo cannot help.
   > - Bad: memo on a component whose props change every render anyway.
 
+  ```jsx
+  import { memo } from "react";
+
+  // Good: the row gets stable props. memo stops re-renders.
+  const Row = memo(function Row({ item }) {
+    return <li>{item.name}</li>;
+  });
+
+  function List({ items }) {
+    return (
+      <ul>
+        {items.map((item) => (
+          <Row key={item.id} item={item} />
+        ))}
+      </ul>
+    );
+  }
+
+  // Bad: the parent passes an inline function.
+  // The prop is new every render, so the memo cannot help.
+  function List({ items }) {
+    return (
+      <ul>
+        {items.map((item) => (
+          <Row key={item.id} item={item} onClick={() => open(item)} />
+        ))}
+      </ul>
+    );
+  }
+  ```
+
 - Verify: Render count drops where it matters, and the page still behaves.
 
 - 📖 [memo docs](https://react.dev/reference/react/memo)
@@ -172,10 +213,14 @@ You now have a list of problems. Fix the High items below.
   > - Split one big context into smaller ones. Separate data from actions.
 
   ```jsx
-  // Before: one context holds everything. Any change re-renders all consumers.
+  import { createContext, useContext, useState } from "react";
+
+  // Before: one context holds everything.
+  // Any change re-renders all consumers.
   const AppContext = createContext({ user, theme, save, logout });
 
-  // After: two contexts. A theme change re-renders only theme consumers.
+  // After: two contexts.
+  // A theme change re-renders only theme consumers.
   const UserContext = createContext(null);
   const ThemeContext = createContext("light");
 
@@ -189,6 +234,12 @@ You now have a list of problems. Fix the High items below.
         </ThemeContext.Provider>
       </UserContext.Provider>
     );
+  }
+
+  // A consumer reads only what it needs.
+  function ThemeButton() {
+    const theme = useContext(ThemeContext);
+    return <button className={theme}>Theme</button>;
   }
   ```
 
@@ -212,16 +263,22 @@ You now have a list of problems. Fix the High items below.
   > - Signs of an unexpected remount: the input loses focus, a checkbox unchecks, the scroll jumps, the Profiler shows a new mount.
 
   ```jsx
-  // Give each item an id once, when it is created:
+  import { useState } from "react";
+
+  // Give each item an id once, when it is created.
   const [items, setItems] = useState(() => [
     { id: crypto.randomUUID(), text: "first" },
     { id: crypto.randomUUID(), text: "second" },
   ]);
 
-  // Add new items the same way:
+  // Add new items the same way.
   setItems((prev) => [...prev, { id: crypto.randomUUID(), text: "new" }]);
 
-  // Use the id as the key:
+  // Bad: the index moves between items.
+  // React rebuilds the wrong rows and state resets.
+  {items.map((item, index) => <Row key={index} item={item} />)}
+
+  // Good: the id stays with the item.
   {items.map((item) => <Row key={item.id} item={item} />)}
   ```
 
@@ -246,6 +303,37 @@ You now have a list of problems. Fix the High items below.
   > - Move it into an event handler, an effect, or a web worker if it runs once.
   > - Move it into the build step if it never changes.
   > - For long lists, render only the visible rows with react-window (virtualization).
+
+  ```jsx
+  import { useMemo } from "react";
+
+  // Bad: the sort runs on every render.
+  function List({ items }) {
+    const sorted = items.sort((a, b) => a.price - b.price);
+    return (
+      <ul>
+        {sorted.map((item) => (
+          <li key={item.id}>{item.name}</li>
+        ))}
+      </ul>
+    );
+  }
+
+  // Good: the sort runs only when items change.
+  function List({ items }) {
+    const sorted = useMemo(
+      () => [...items].sort((a, b) => a.price - b.price),
+      [items]
+    );
+    return (
+      <ul>
+        {sorted.map((item) => (
+          <li key={item.id}>{item.name}</li>
+        ))}
+      </ul>
+    );
+  }
+  ```
 
 - Verify: The flamegraph gets shorter. Typing stays smooth.
 
@@ -274,12 +362,15 @@ You now have a list of problems. Fix the High items below.
   ```jsx
   import { lazy, Suspense } from "react";
 
+  // Load a screen only when the user opens it.
   const Settings = lazy(() => import("./Settings"));
+  const Profile = lazy(() => import("./Profile"));
 
   function App() {
     return (
       <Suspense fallback={<p>Loading...</p>}>
         <Settings />
+        <Profile />
       </Suspense>
     );
   }
@@ -303,6 +394,14 @@ You now have a list of problems. Fix the High items below.
   > - Remove or replace big packages.
   > - Use per-package imports.
 
+  ```js
+  // Bad: imports the whole package.
+  import _ from "lodash";
+
+  // Good: imports only the function you use.
+  import debounce from "lodash/debounce";
+  ```
+
 - Verify: The bundle picture gets smaller.
 
 - 🛠 [Bundle visualizer guide](guides/bundle-visualizer.md)
@@ -322,6 +421,18 @@ You now have a list of problems. Fix the High items below.
   > - Add loading="lazy" to images below the fold.
   > - Add sizes.
   > - Preload the critical font.
+
+  ```jsx
+  // Bad: every image loads on page open.
+  <img src="hero.jpg" />
+
+  // Good: below-the-fold images load only when near the screen.
+  <img
+    src="hero.jpg"
+    loading="lazy"
+    sizes="(max-width: 600px) 100vw, 50vw"
+  />
+  ```
 
 - Verify: LCP and CLS improve in Lighthouse.
 
@@ -369,6 +480,34 @@ You now have a list of problems. Fix the High items below.
   > - Open the Chrome Performance panel, record an interaction, read the blocking time.
   > - Move the work out of the handler. Defer what is not urgent.
 
+  ```jsx
+  // Bad: the click handler blocks the page.
+  function onClick() {
+    const rows = [];
+    for (let i = 0; i < 100000; i++) {
+      rows.push(heavyWork(i));
+    }
+    setRows(rows);
+  }
+
+  // Good: chunk the work so the page stays responsive.
+  function onClick() {
+    const rows = [];
+    let i = 0;
+    function nextChunk() {
+      const end = Math.min(i + 1000, 100000);
+      for (; i < end; i++) {
+        rows.push(heavyWork(i));
+      }
+      setRows([...rows]);
+      if (i < 100000) {
+        setTimeout(nextChunk, 0);
+      }
+    }
+    nextChunk();
+  }
+  ```
+
 - Verify: The blocking time drops, and INP follows.
 
 - 📖 [Optimize long tasks](https://web.dev/articles/optimize-long-tasks)
@@ -389,6 +528,26 @@ You now have a list of problems. Fix the High items below.
   _How:_
   > - Turn on eslint-plugin-react-hooks and eslint-plugin-react-compiler.
   > - Config included: eslint.config.js.
+
+  ```js
+  // eslint.config.js
+  import reactHooks from "eslint-plugin-react-hooks";
+  import reactCompiler from "eslint-plugin-react-compiler";
+
+  export default [
+    {
+      plugins: {
+        "react-hooks": reactHooks,
+        "react-compiler": reactCompiler,
+      },
+      rules: {
+        "react-hooks/rules-of-hooks": "error",
+        "react-hooks/exhaustive-deps": "error",
+        "react-compiler/react-compiler": "error",
+      },
+    },
+  ];
+  ```
 
 - Verify: Run npm run lint. Zero errors means it is on.
 
@@ -421,6 +580,30 @@ You now have a list of problems. Fix the High items below.
   _How:_
   > - Write a call-count test. Example: test/perf-regression.test.jsx.
   > - Use React.Profiler for duration asserts.
+
+  ```jsx
+  // test/perf-regression.test.jsx
+  import { fireEvent, render } from "@testing-library/react";
+  import { memo, useCallback, useState } from "react";
+  import { expect, it, vi } from "vitest";
+
+  const renderRow = vi.fn(({ onClick }) => (
+    <button onClick={onClick}>bump</button>
+  ));
+  const Row = memo(renderRow);
+
+  it("keeps the memoized row still when the callback is stable", () => {
+    function Parent() {
+      const [, setCount] = useState(0);
+      const bump = useCallback(() => setCount((c) => c + 1), []);
+      return <Row onClick={bump} />;
+    }
+
+    render(<Parent />);
+    fireEvent.click(document.querySelector("button"));
+    expect(renderRow).toHaveBeenCalledTimes(1);
+  });
+  ```
 
 - Verify: The test goes red on a regression, green after the fix.
 

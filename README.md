@@ -91,6 +91,7 @@ step for each. `audit-prompt.md` turns the scan into an agent verdict.
 | File | Purpose |
 | --- | --- |
 | `react-performance-checklist.md` | One page. Use it at work. |
+| `glossary.md` | Plain meanings for the jargon, with example sentences. |
 | `audit-checklist.md` | Full checklist with detection and fix steps. An agent can apply it. |
 | `audit-prompt.md` | Paste-ready prompt for an auditing agent. |
 | `AGENTS.md` | Rules for coding agents that work in this repo. |
@@ -171,6 +172,8 @@ For your own app, add these on top of the workflow:
 ## For very junior developers
 
 New words, plain meaning:
+
+Full glossary with example sentences: `glossary.md`.
 
 | Word | Meaning |
 | --- | --- |

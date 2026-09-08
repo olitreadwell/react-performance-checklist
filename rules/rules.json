@@ -158,7 +158,7 @@
     "category": "rendering",
     "smell": true,
     "smellText": "Index used as a key in a reordering list",
-    "summary": "key={index} in a list that reorders or filters.",
+    "summary": "`key={index}` in a list that reorders or filters.",
     "why": "The index moves between items, so React rebuilds the wrong rows.",
     "how": [
       "Use the database id as the key.",

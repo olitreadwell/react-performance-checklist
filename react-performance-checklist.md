@@ -246,7 +246,7 @@ You now have a list of problems. Fix the High items below.
 
 ### 6. Keys must be stable [High]
 
-- [ ] key={index} in a list that reorders or filters.
+- [ ] `key={index}` in a list that reorders or filters.
 
 - Unexpected remount: the component loses its state. Signs: the input loses focus while you type, a checkbox unchecks, the scroll jumps, the Profiler shows a new mount.
 - How to check: type in a row's input, then reorder the list. If the input loses focus, the row remounted.

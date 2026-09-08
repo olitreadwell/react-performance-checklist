@@ -2,49 +2,77 @@
 // they fail on the slow version (red) and pass on the fixed version
 // (green). Each test maps to one rule in the checklist.
 
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { createElement, memo } from "react";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { createElement, memo, Profiler } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import App from "../src/App";
+import { useStore } from "../src/store";
 
-const { rowRenders } = vi.hoisted(() => ({ rowRenders: { count: 0 } }));
+const counters = vi.hoisted(() => ({
+  rowRenders: { count: 0 },
+  headerRenders: { count: 0 },
+}));
 
 vi.mock("../src/ProductRow", async (importOriginal) => {
   const actual = await importOriginal();
   return {
     ProductRow: memo((props) => {
-      rowRenders.count += 1;
+      counters.rowRenders.count += 1;
       return createElement(actual.ProductRow, props);
     }),
   };
 });
 
+vi.mock("../src/Header", async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    Header: (props) => {
+      counters.headerRenders.count += 1;
+      return actual.Header(props);
+    },
+  };
+});
+
 beforeEach(() => {
-  rowRenders.count = 0;
+  counters.rowRenders.count = 0;
+  counters.headerRenders.count = 0;
+  // Every test needs a benign fetch: the stats panel fetches on mount in
+  // the slow version. Individual tests override this stub when they
+  // assert on fetch behavior (D-01, D-03).
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(() =>
+      Promise.resolve({
+      ok: true,
+      json: () => Promise.resolve({ statsEnabled: true }),
+    }),
+    ),
+  );
 });
 
 afterEach(() => {
   cleanup();
+  vi.unstubAllGlobals();
 });
 
 describe("R-03 + R-07: rows stay still while typing", () => {
   it("typing in the search box does not re-render product rows", () => {
     render(<App />);
-    const before = rowRenders.count;
+    const before = counters.rowRenders.count;
     fireEvent.change(screen.getByPlaceholderText("Search products"), {
       target: { value: "Product 1" },
     });
-    expect(rowRenders.count).toBe(before);
+    expect(counters.rowRenders.count).toBe(before);
   });
 });
 
 describe("R-05: context changes stay local", () => {
   it("changing the theme does not re-render product rows", () => {
     render(<App />);
-    const before = rowRenders.count;
+    const before = counters.rowRenders.count;
     fireEvent.click(screen.getByText("Toggle theme"));
-    expect(rowRenders.count).toBe(before);
+    expect(counters.rowRenders.count).toBe(before);
   });
 });
 
@@ -59,6 +87,13 @@ describe("R-06: stable keys keep rows alive", () => {
     const focusedRow = document.activeElement.closest("li");
     const nameAfter = focusedRow.querySelector("span").textContent;
     expect(nameAfter).toBe(nameBefore);
+  });
+});
+
+describe("R-08: components are defined at module scope", () => {
+  it("ProductList does not define a component inside its body", () => {
+    const source = readFileSync("src/ProductList.jsx", "utf8");
+    expect(source).not.toMatch(/^ {2}const [A-Z]\w* = /m);
   });
 });
 
@@ -82,6 +117,57 @@ describe("L-03 + F-01: images load lazily at the right size", () => {
   });
 });
 
+describe("L-05: imports come from the exact module", () => {
+  it("ProductRow imports formatPrice from ./lib/format, not the barrel", () => {
+    const source = readFileSync("src/ProductRow.jsx", "utf8");
+    expect(source).toContain('from "./lib/format"');
+  });
+});
+
+describe("D-01: independent fetches run in parallel", () => {
+  it("the two stats requests start together", async () => {
+    const calls = [];
+    let resolveSales;
+    const salesGate = new Promise((resolve) => {
+      resolveSales = resolve;
+    });
+    const fetchSpy = vi.fn((url) => {
+      calls.push(url);
+      if (url === "/api/sales-summary") return salesGate;
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ statsEnabled: true }),
+      });
+    });
+    vi.stubGlobal("fetch", fetchSpy);
+    render(<App />);
+    await act(async () => {
+      fireEvent.click(screen.getAllByRole("button", { name: "Add" })[0]);
+    });
+    await act(async () => {});
+    expect(calls).toContain("/api/sales-summary");
+    // Slow: the second fetch waits for the first to resolve. Fixed:
+    // Promise.all starts both on the same tick.
+    expect(calls).toContain("/api/top-products");
+    resolveSales({ ok: true, json: () => Promise.resolve({}) });
+  });
+});
+
+describe("D-03: cheap conditions are checked before await", () => {
+  it("no stats request fires while the panel is closed", async () => {
+    const fetchSpy = vi.fn(() =>
+      Promise.resolve({
+      ok: true,
+      json: () => Promise.resolve({ statsEnabled: true }),
+    }),
+    );
+    vi.stubGlobal("fetch", fetchSpy);
+    render(<App />);
+    await act(async () => {});
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+});
+
 describe("M-02: click handlers do not block the main thread", () => {
   it("the export handler yields instead of running 200k rows synchronously", () => {
     const timeoutSpy = vi.spyOn(globalThis, "setTimeout");
@@ -89,6 +175,36 @@ describe("M-02: click handlers do not block the main thread", () => {
     fireEvent.click(screen.getByText("Export report"));
     // A blocked main thread never schedules chunks. A chunked handler does.
     expect(timeoutSpy).toHaveBeenCalled();
+  });
+});
+
+describe("S-01: store subscriptions use a selector", () => {
+  it("an unrelated store change does not re-render the subscriber", () => {
+    const commits = [];
+    render(
+      <Profiler
+        id="app"
+        onRender={() => commits.push(1)}
+      >
+        <App />
+      </Profiler>,
+    );
+    commits.length = 0;
+    act(() => {
+      useStore.setState({ lastSync: Date.now() + 1 });
+    });
+    expect(commits.length).toBe(0);
+  });
+});
+
+describe("S-02: derived state is computed during render", () => {
+  it("a cart change costs one header render, not two", () => {
+    render(<App />);
+    counters.headerRenders.count = 0;
+    act(() => {
+      fireEvent.click(screen.getAllByRole("button", { name: "Add" })[0]);
+    });
+    expect(counters.headerRenders.count).toBe(1);
   });
 });
 

@@ -15,7 +15,8 @@
     "lodash": "4.17.21",
     "moment": "2.30.1",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "zustand": "^5.0.8"
   },
   "devDependencies": {
     "@size-limit/preset-app": "^13.0.3",

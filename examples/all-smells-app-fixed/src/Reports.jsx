@@ -1,5 +1,5 @@
-// L-01: imported eagerly. Every user downloads this heavy screen on the
-// first visit, even if they never open it.
+// L-02 fix: no whole-package imports. Plain JS. The slow version
+// imported lodash and moment for two lines of work.
 export function Reports() {
   const rows = [];
   for (let i = 0; i < 5000; i++) {

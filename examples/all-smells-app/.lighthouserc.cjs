@@ -1,4 +1,5 @@
-// Lighthouse CI budgets for the fixed app. Run: npx lhci autorun
+// Lighthouse CI budgets for the fixed app. Run: npx @lhci/cli autorun
+// (The npm name `lhci` is a different package; use @lhci/cli.)
 // (after `npm run preview`). Fails when a budget regresses.
 module.exports = {
   ci: {

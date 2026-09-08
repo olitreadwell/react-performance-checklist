@@ -5,6 +5,8 @@ import { Header } from "./Header";
 import { ProductList } from "./ProductList";
 import { SearchBox } from "./SearchBox";
 import { SortControl } from "./SortControl";
+import { Stats } from "./Stats";
+import { ViewCounter } from "./ViewCounter";
 
 // L-01 fix: the heavy screen loads only when it is opened.
 const Reports = lazy(() =>
@@ -67,6 +69,8 @@ export default function App() {
             <SearchBox query={query} setQuery={setQuery} />
             <SortControl sort={sort} setSort={setSort} />
             <ProductList products={visible} onAdd={addToCart} />
+            <ViewCounter />
+            <Stats />
             <button onClick={handleExport}>Export report</button>
             <Suspense fallback={<p>Loading reports...</p>}>
               <Reports />

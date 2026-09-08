@@ -28,8 +28,6 @@ Rules:
 Hand off, do not reinvent:
 - For the general web pass, use the `web-quality-skills` agent skill
   (addyosmani/web-quality-skills) if it is installed.
-- For visual jank, use the `dejank` skill (gbasin/dejank) if it is
-  installed.
 - This repo's `audit-checklist.md` covers the React render pass. Follow
   its fix steps and verify steps.
 

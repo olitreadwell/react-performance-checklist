@@ -67,7 +67,7 @@ The tests can. That is why the checklist says measure first.
 
 For the general web pass (Lighthouse, Core Web Vitals, delivery), the
 agent hands off to the `web-quality-skills` agent skill instead of
-reinventing it. For visual jank, it hands off to `dejank`. See the
+reinventing it. See the
 [Hand off to existing skills](#hand-off-to-existing-skills) section in
 the README.
 
@@ -219,7 +219,7 @@ not performance. Left alone, per the checklist: fix the measured cost.
 
 ## Lighthouse CI: the gate caught a real issue
 
-The first `lhci autorun` run failed. The gate did its job:
+The first `@lhci/cli autorun` run failed. The gate did its job:
 
 ```text
 ✘ largest-contentful-paint   found 2855 ms, budget 2500 ms

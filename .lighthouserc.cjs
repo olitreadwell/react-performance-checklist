@@ -1,5 +1,6 @@
 // Lighthouse CI budgets. Copy this file into your app, set the URLs,
-// and run `npx lhci autorun`. Fails the build when a budget regresses.
+// and run `npx @lhci/cli autorun`. Fails the build when a budget
+// regresses. (The npm name `lhci` is a different package; use @lhci/cli.)
 // Rule M-01 and G-04 in the checklist.
 module.exports = {
   ci: {

@@ -7,6 +7,8 @@ import { ProductList } from "./ProductList";
 import { Reports } from "./Reports";
 import { SearchBox } from "./SearchBox";
 import { SortControl } from "./SortControl";
+import { Stats } from "./Stats";
+import { ViewCounter } from "./ViewCounter";
 
 export default function App() {
   const [user] = useState({ name: "Oli" });
@@ -46,6 +48,8 @@ export default function App() {
         <SearchBox />
         <SortControl sort={sort} setSort={setSort} />
         <ProductList products={visible} />
+        <ViewCounter />
+        <Stats />
         <button onClick={handleExport}>Export report</button>
         <Reports />
       </div>

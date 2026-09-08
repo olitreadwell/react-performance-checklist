@@ -28,7 +28,5 @@ Hand off, do not reinvent:
   CSS, delivery, third-party), use the `web-quality-skills` agent skill
   (addyosmani/web-quality-skills) if it is installed. It measures before
   it changes anything.
-- For visual jank (flicker, layout shift, flash), use the `dejank` skill
-  (gbasin/dejank) if it is installed.
 - This repo's `audit-checklist.md` covers the React render pass. Read it
   fully and report findings by its IDs.

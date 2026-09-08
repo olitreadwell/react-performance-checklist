@@ -1326,7 +1326,8 @@ This repo ships the automation, not just the advice. No agent required:
 
 - `.github/workflows/check.yml` runs lint and tests on every push.
 - `.lighthouserc.cjs` is a Lighthouse CI budget file. Copy it into your
-  app, set the URLs, and run `npx lhci autorun`. It fails the build when
+  app, set the URLs, and run `npx @lhci/cli autorun`. It fails the
+  build when
   LCP, INP, CLS, or bundle weight regress.
 - `.size-limit.json` is a bundle budget. Copy it into your app and run
   `npx size-limit`. It fails when the bundle grows past 300 KB gzipped.
@@ -1390,9 +1391,7 @@ keep this repo for the React-specific pass.
 | Skill | What it does | Install | Stars |
 | --- | --- | --- | --- |
 | [web-quality-skills](https://github.com/addyosmani/web-quality-skills) | Measurement-first agent skills: Lighthouse, Core Web Vitals, load, delivery, a11y, SEO. Works with Claude Code, Codex, Gemini. | `npx skills add addyosmani/web-quality-skills` | 2.7k, active |
-| [dejank](https://github.com/gbasin/dejank) | Detects and diagnoses visual jank in React UIs: 18 anti-patterns plus runtime investigation. | `npx skills add gbasin/dejank --all -g` | 30, active |
 | [react-best-practices (Vercel)](https://github.com/vercel-labs/agent-skills/tree/main/skills/react-best-practices) | Vercel's agent skill: 70 rules across waterfalls, bundles, server, client fetching, renders, JS. MIT. Same format as the rules in this repo. | `npx skills add vercel-labs/agent-skills` | official Vercel |
-| [react-best-practices](https://github.com/michaelshimeles/react-best-practices) | React best practices skill: component structure, state, performance. | `npx skills add michaelshimeles/react-best-practices` | 13 |
 
 The division of labour:
 
@@ -1404,7 +1403,6 @@ The division of labour:
 - Deep React/Next pass (waterfalls, bundles, server-side, advanced
   patterns): hand the findings to `vercel-labs/agent-skills`
   `react-best-practices`. Its 70 rules go deeper than this repo's 34.
-- Visual jank pass (flicker, layout shift, flash): hand to `dejank`.
 
 Do not write a new scanner or a new skill when one of these already does
 the job. Run the audit, then hand the findings to the right skill.
@@ -1444,7 +1442,6 @@ agent should actually run.
 | [React Performance Checklist](https://marceloretana.com/checklist/react-performance-checklist) | Render-section coverage: memo, contexts, keys, lists, and the note that render count is not the cost. |
 | [performance-checklist](https://github.com/flowforfrank/performance-checklist) | General front-end load items: images, fonts, CSS, caching, third-party. |
 | [react-perf-hooks checklist](https://valyefimov.github.io/react-perf-hooks/docs/guides/performance-checklist) | Hook correctness: when useMemo and useCallback actually pay off. |
-| [react-performance-best-practices](https://github.com/ChristopherTejada/react-performance-best-practices) | Tooling-first approach: bundle analysis, virtualization, code splitting. |
 | [React Performance Checklist](https://react.codeguides.io/react-performance/performance-checklist/) | Rendering and state items: lazy state init, transitions, derived state. |
 | [ecc-explorer catalog: react-performance skill](https://esandorfi.github.io/ecc-explorer/catalog/skills/react-performance/) | Evidence that performance agent skills exist and are discoverable; feeds the hand-off section. |
 | [Complete React performance optimisation guide](https://dev.to/ufomadu_nnaemeka_89/react-performance-optimisation-checklist-a-complete-guide-for-building-faster-react-applications-54g6) | Lazy loading, images, bundle size, and memory items. |
@@ -1452,6 +1449,7 @@ agent should actually run.
 | [Introducing React Best Practices](https://vercel.com/blog/introducing-react-best-practices) | Waterfalls, data fetching, and caching items: D-01 to D-03. |
 | [vercel-labs/agent-skills react-best-practices](https://github.com/vercel-labs/agent-skills/tree/main/skills/react-best-practices) | The 70-rule agent skill: barrel imports, cheap-conditions-before-await, passive listeners, and the deep hand-off target for agents. |
 | [Front-End Performance Checklist](https://github.com/thedaviddias/front-end-performance-checklist) | The F-section (non-React) items and the repo's structure. |
+| [frontend.fast](https://frontend.fast/) | The modern, filterable version of the Front-End Performance Checklist: 72 items across HTML, images, video, fonts, network, animation, and Core Web Vitals. Feeds the F-section and the hand-off guidance. |
 
 Base references:
 
@@ -1461,7 +1459,6 @@ Base references:
 - [React Scan](https://react-scan.million.dev)
 - [React Doctor](https://react.doctor)
 - [web-quality-skills](https://github.com/addyosmani/web-quality-skills)
-- [dejank](https://github.com/gbasin/dejank)
 - [TanStack Virtual](https://tanstack.com/virtual)
 - [Partytown](https://partytown.builder.io/)
 

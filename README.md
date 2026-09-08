@@ -17,11 +17,13 @@ Every word has a plain meaning: [glossary.md](glossary.md)
 - [C. Load time](#c-load-time)
 - [D. What users feel](#d-what-users-feel)
 - [E. Guard rails](#e-guard-rails)
+- [F. Front-end (non-React)](#f-front-end-non-react)
 - [Code smells at a glance](#code-smells-at-a-glance)
 - [Tools](#tools)
 - [IDE and browser extensions](#ide-and-browser-extensions)
 - [CI](#ci)
 - [For agents](#for-agents)
+- [Hand off to existing skills](#hand-off-to-existing-skills)
 - [Files in this repo](#files-in-this-repo)
 - [References](#references)
 - [License](#license)
@@ -380,6 +382,7 @@ What each command does:
 - Verify: The flamegraph gets shorter. Typing stays smooth.
 
 - 📖 [react-window](https://react-window.vercel.app/)
+- 📖 [TanStack Virtual](https://tanstack.com/virtual)
 
 **[⬆ back to top](#table-of-contents)**
 
@@ -479,6 +482,7 @@ What each command does:
 - Verify: LCP and CLS improve in Lighthouse.
 
 - 🛠 [Lighthouse guide](guides/lighthouse.md)
+- 📖 [react-intersection-observer](https://github.com/thebuilder/react-intersection-observer)
 
 **[⬆ back to top](#table-of-contents)**
 
@@ -671,6 +675,153 @@ What each command does:
 - 📖 [React Doctor CI](https://react.doctor/ci)
 
 **[⬆ back to top](#table-of-contents)**
+
+## F. Front-end (non-React)
+
+### 17. Image formats and sizes [Medium]
+
+- [ ] Images in the wrong format, or one size for every screen.
+
+- srcset: a list of image sizes. The browser picks the one that fits the screen. [Definition](glossary.md)
+
+  _Why:_
+  > A 2000px JPEG for a 300px slot costs every user download time. WebP or AVIF is smaller, and srcset serves the right size per screen.
+
+  _How:_
+  > - Serve WebP or AVIF instead of JPEG or PNG where the format is supported.
+  > - Add srcset and sizes so small screens download small images.
+  > - Compress the source image. Aim for the smallest file that still looks right.
+
+  ```jsx
+  // Bad: one huge image for every screen.
+  <img src="hero.jpg" />
+
+  // Good: the browser picks the size that fits.
+  <img
+    src="hero-800.webp"
+    srcset="hero-400.webp 400w, hero-800.webp 800w, hero-1600.webp 1600w"
+    sizes="(max-width: 600px) 100vw, 50vw"
+  />
+  ```
+
+- Verify: Lighthouse image audits pass, and the page downloads fewer bytes.
+
+- 📖 [web.dev image guidance](https://web.dev/learn/images)
+
+### 18. Font delivery [Medium]
+
+- [ ] Fonts that block text, or load more glyphs than the page needs.
+
+- font-display: swap: show fallback text immediately, swap in the real font when it loads. [Definition](glossary.md)
+
+  _Why:_
+  > A font that blocks first paint delays the text users came to read. font-display: swap shows fallback text first, and subsetting ships fewer bytes.
+
+  _How:_
+  > - Use font-display: swap so text shows while the font loads.
+  > - Preload the font file the page needs first.
+  > - Subset the font, or use a variable font, so you ship only the glyphs you use.
+
+  ```jsx
+  /* Bad: text is invisible until the font loads. */
+  @font-face {
+    font-family: "Body";
+    src: url("/fonts/body.woff2");
+  }
+
+  /* Good: fallback text shows first, then the real font swaps in. */
+  @font-face {
+    font-family: "Body";
+    src: url("/fonts/body.woff2");
+    font-display: swap;
+  }
+  ```
+
+- Verify: Lighthouse font audits pass, and text appears before the font finishes loading.
+
+- 📖 [web.dev font best practices](https://web.dev/articles/font-best-practices)
+
+### 19. CSS delivery [Medium]
+
+- [ ] Render-blocking CSS, or CSS the page never uses.
+
+- Critical CSS: the styles the first screen needs, inlined so the page paints without waiting. [Definition](glossary.md)
+
+  _Why:_
+  > CSS blocks first paint. A big stylesheet delays the first useful frame, and unused rules cost download time for nothing.
+
+  _How:_
+  > - Inline the critical CSS for the first screen.
+  > - Load the rest of the CSS asynchronously.
+  > - Purge unused CSS in the build.
+
+  ```jsx
+  <!-- Bad: the whole stylesheet blocks first paint. -->
+  <link rel="stylesheet" href="/app.css" />
+
+  <!-- Good: critical styles inline, the rest loads after. -->
+  <style>/* critical styles for the first screen */</style>
+  <link rel="stylesheet" href="/app.css" media="print" onload="this.media='all'" />
+  ```
+
+- Verify: Lighthouse render-blocking audit passes, and the first paint is faster.
+
+- 📖 [web.dev render-blocking resources](https://web.dev/articles/render-blocking-resources)
+
+### 20. Delivery: caching and compression [Medium]
+
+- [ ] No compression, no cache headers, or no CDN.
+
+- CDN: a network of servers that serves files from the one nearest the user. [Definition](glossary.md)
+
+  _Why:_
+  > Compression shrinks what travels over the network. Cache headers stop repeat visits from downloading the same bytes. A CDN puts the bytes near the user.
+
+  _How:_
+  > - Turn on gzip or brotli compression.
+  > - Set cache-control headers. Long cache for hashed assets, short for HTML.
+  > - Serve static assets from a CDN.
+
+  ```jsx
+  // Bad: every visit downloads the same bytes.
+  Cache-Control: no-store
+
+  // Good: hashed assets stay cached for a year.
+  Cache-Control: public, max-age=31536000, immutable
+  ```
+
+- Verify: Lighthouse network audits pass, and repeat visits download fewer bytes.
+
+- 📖 [web.dev caching guidance](https://web.dev/articles/http-cache)
+
+### 21. Third-party scripts [Medium]
+
+- [ ] Heavy third-party scripts that block the main thread.
+
+- defer: download in the background, run after the page parses. [Definition](glossary.md)
+
+  _Why:_
+  > Analytics, chat widgets, and ad scripts run on the main thread. Each one competes with your app for the user's attention.
+
+  _How:_
+  > - Load third-party scripts with defer or async so they do not block first paint.
+  > - Load them only on the pages that need them.
+  > - Remove the ones you do not use. Self-host the ones you keep.
+
+  ```jsx
+  <!-- Bad: blocks the page while it downloads and runs. -->
+  <script src="https://analytics.example.com/tracker.js"></script>
+
+  <!-- Good: downloads in the background, runs after the page parses. -->
+  <script defer src="https://analytics.example.com/tracker.js"></script>
+  ```
+
+- Verify: Lighthouse third-party audit passes, and the main thread is quieter.
+
+- 📖 [web.dev third-party guidance](https://web.dev/articles/third-party-javascript)
+- 📖 [Partytown](https://partytown.builder.io/)
+
+**[⬆ back to top](#table-of-contents)**
 <!-- CHECKLIST:END -->
 
 <!-- SMELLS:START -->
@@ -713,6 +864,18 @@ What each command does:
   ```jsx
   <img src="hero.jpg" />
   ```
+
+- [ ] Images served too big for the screen -> [item 17](#17-image-formats-and-sizes-medium)
+
+  ```jsx
+  <img src="hero.jpg" />
+  ```
+
+- [ ] Heavy third-party scripts on every page -> [item 21](#21-third-party-scripts-medium)
+
+  ```jsx
+  <script src="https://analytics.example.com/tracker.js"></script>
+  ```
 <!-- SMELLS:END -->
 
 ## Tools
@@ -736,6 +899,11 @@ What each command does:
 | Chrome Performance panel | Shows long tasks and slow code | | https://developer.chrome.com/docs/devtools/performance/ |
 | React.Profiler | Measures render time in tests | | https://react.dev/reference/react/Profiler |
 | react-window | Speeds up long lists (virtualization) | | https://react-window.vercel.app/ |
+| TanStack Virtual | Modern virtualization for long lists, framework-agnostic | | https://tanstack.com/virtual |
+| react-intersection-observer | Tells you when an element enters the viewport. Powers lazy loading | | https://github.com/thebuilder/react-intersection-observer |
+| Partytown | Moves third-party scripts off the main thread into a web worker | | https://partytown.builder.io/ |
+| Quicklink | Prefetches in-viewport links during idle time | | https://github.com/GoogleChromeLabs/quicklink |
+| perfume.js | Measures performance vitals in the browser | | https://github.com/Zizzamia/perfume.js |
 | Biome | Linter and formatter with autofix | | https://biomejs.dev/ |
 | Front-End Performance Checklist | Load performance checklist by David Dias | | https://github.com/thedaviddias/front-end-performance-checklist |
 
@@ -750,7 +918,16 @@ What each command does:
 
 ## CI
 
-This repo ships a GitHub Actions workflow: `.github/workflows/check.yml`. It runs lint and tests on every push.
+This repo ships the automation, not just the advice. No agent required:
+
+- `.github/workflows/check.yml` runs lint and tests on every push.
+- `.lighthouserc.js` is a Lighthouse CI budget file. Copy it into your
+  app, set the URLs, and run `npx lhci autorun`. It fails the build when
+  LCP, INP, CLS, or bundle weight regress.
+- `.size-limit.json` is a bundle budget. Copy it into your app and run
+  `npx size-limit`. It fails when the bundle grows past 300 KB gzipped.
+- `npm run audit -- <path-to-app>` runs React Doctor, ESLint, and the
+  app's tests, then writes `PERFORMANCE-REPORT.md`.
 
 For your own app, add:
 
@@ -761,6 +938,10 @@ For your own app, add:
 | React Doctor | One-command CI: `npx react-doctor@latest ci install` | https://react.doctor/ci |
 | web-vitals + a dashboard | Shows real-user field data from production | https://github.com/GoogleChrome/web-vitals |
 
+The example app (`examples/slow-app-fixed/`) ships all of it wired up:
+lint, tests, size-limit, Lighthouse budgets, and a CI workflow. See
+[examples/WALKTHROUGH.md](examples/WALKTHROUGH.md).
+
 ## For agents
 
 Three surfaces, one rule corpus. Modeled on thedaviddias/front-end-checklist.
@@ -770,11 +951,50 @@ Three surfaces, one rule corpus. Modeled on thedaviddias/front-end-checklist.
 - MCP server: `packages/mcp/server.mjs` exposes the rules to MCP-capable agents.
   Run it with `npm run mcp`, or add `.mcp.json` to your agent config.
 
-The MCP server has three tools: `list_rules`, `get_rule`, and `audit_plan`.
+The MCP server has four tools: `list_rules`, `get_rule`, `audit_plan`, and
+`fix_plan`.
 
 - [audit-checklist.md](audit-checklist.md): the full checklist with detection and fix steps
 - [audit-prompt.md](audit-prompt.md): paste this prompt into a coding agent to audit a codebase
+- [fix-prompt.md](fix-prompt.md): paste this prompt into a coding agent to fix the findings
+- [report-template.md](report-template.md): the report format every audit writes
 - [AGENTS.md](AGENTS.md): rules for agents working in this repo
+
+The fast loop, end to end:
+
+1. `npm run audit -- <path-to-app>` runs React Doctor, ESLint, and the
+   app's tests, then writes `PERFORMANCE-REPORT.md` in the app.
+2. Hand the report to `fix-prompt.md`. The agent fixes one finding at a
+   time, measures before and after, and commits each fix separately.
+3. Re-run the audit. The report is the proof.
+
+The MCP server gives the same rules to any MCP-capable agent without
+copying files: `list_rules` to see the corpus, `get_rule` for one rule,
+`audit_plan` to plan the scan, `fix_plan` to plan a fix.
+
+## Hand off to existing skills
+
+You are not the first person to automate this. When an agent audits or
+fixes an app, hand the general web pass to skills that already exist, and
+keep this repo for the React-specific pass.
+
+| Skill | What it does | Install | Stars |
+| --- | --- | --- | --- |
+| [web-quality-skills](https://github.com/addyosmani/web-quality-skills) | Measurement-first agent skills: Lighthouse, Core Web Vitals, load, delivery, a11y, SEO. Works with Claude Code, Codex, Gemini. | `npx skills add addyosmani/web-quality-skills` | 2.7k, active |
+| [dejank](https://github.com/gbasin/dejank) | Detects and diagnoses visual jank in React UIs: 18 anti-patterns plus runtime investigation. | `npx skills add gbasin/dejank --all -g` | 30, active |
+| [react-best-practices](https://github.com/michaelshimeles/react-best-practices) | React best practices skill: component structure, state, performance. | `npx skills add michaelshimeles/react-best-practices` | 13 |
+
+The division of labour:
+
+- General web pass (images, fonts, CSS, delivery, caching, third-party):
+  hand to `web-quality-skills`. It measures with Lighthouse and Core Web
+  Vitals before it changes anything.
+- React render pass (memo, context, keys, heavy work in render): use this
+  repo's rules and audit flow.
+- Visual jank pass (flicker, layout shift, flash): hand to `dejank`.
+
+Do not write a new scanner or a new skill when one of these already does
+the job. Run the audit, then hand the findings to the right skill.
 
 ## Files in this repo
 
@@ -782,12 +1002,22 @@ The MCP server has three tools: `list_rules`, `get_rule`, and `audit_plan`.
 | --- | --- |
 | `react-performance-checklist.md` | The checklist as a single page (same content as above) |
 | `glossary.md` | Plain meanings for every word, with examples and official docs |
-| `rules/rules.json` | The 16 rules as structured data. Read by agents and the MCP server |
+| `rules/rules.json` | The 21 rules as structured data. Read by agents and the MCP server |
 | `scripts/generate-readme.mjs` | Builds the checklist sections from `rules/rules.json` |
-| `packages/mcp/server.mjs` | MCP server: `list_rules`, `get_rule`, `audit_plan` |
+| `scripts/audit.mjs` | Runs the referenced scanners against an app and writes a report |
+| `.lighthouserc.js` | Lighthouse CI budgets. Copy into your app |
+| `.size-limit.json` | Bundle budget. Copy into your app |
+| `packages/mcp/server.mjs` | MCP server: `list_rules`, `get_rule`, `audit_plan`, `fix_plan` |
 | `guides/` | One beginner guide per tool |
 | `eslint.config.js` | Lint rules with autofix |
 | `test/perf-regression.test.jsx` | A test that shows a smell and its fix |
+| `test/mcp-server.test.mjs` | Contract tests for the MCP server |
+| `test/generate-readme.test.mjs` | Keeps the generated README in sync with `rules.json` |
+| `audit-checklist.md` | Detection and fix steps for every rule |
+| `audit-prompt.md` | Prompt for the audit pass |
+| `fix-prompt.md` | Prompt for the fix pass |
+| `report-template.md` | The report format every audit writes |
+| `examples/` | A slow app, the fixed version, and the walkthrough |
 | `.github/workflows/check.yml` | CI: lint and tests on every push |
 
 ## References
@@ -798,6 +1028,10 @@ The MCP server has three tools: `list_rules`, `get_rule`, and `audit_plan`.
 - [Front-End Performance Checklist](https://github.com/thedaviddias/front-end-performance-checklist)
 - [React Scan](https://react-scan.million.dev)
 - [React Doctor](https://react.doctor)
+- [web-quality-skills](https://github.com/addyosmani/web-quality-skills)
+- [dejank](https://github.com/gbasin/dejank)
+- [TanStack Virtual](https://tanstack.com/virtual)
+- [Partytown](https://partytown.builder.io/)
 
 ## Credits
 

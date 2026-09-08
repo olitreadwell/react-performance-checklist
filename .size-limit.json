@@ -1,0 +1,9 @@
+// Bundle budget. Copy into your app and run `npx size-limit`.
+// Rule L-02 and G-04 in the checklist.
+[
+  {
+    "path": "dist/assets/*.js",
+    "limit": "300 KB",
+    "gzip": true
+  }
+]

@@ -22,3 +22,13 @@ Rules:
 
 Do not invent tools. Use only tools that exist in the environment.
 If a tool is missing, say so and use static inspection only.
+
+Hand off, do not reinvent:
+- For the general web pass (Lighthouse, Core Web Vitals, images, fonts,
+  CSS, delivery, third-party), use the `web-quality-skills` agent skill
+  (addyosmani/web-quality-skills) if it is installed. It measures before
+  it changes anything.
+- For visual jank (flicker, layout shift, flash), use the `dejank` skill
+  (gbasin/dejank) if it is installed.
+- This repo's `audit-checklist.md` covers the React render pass. Read it
+  fully and report findings by its IDs.

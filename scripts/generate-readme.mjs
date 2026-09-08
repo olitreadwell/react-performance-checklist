@@ -15,6 +15,7 @@ const CATEGORIES = [
   { key: "load", heading: "C. Load time" },
   { key: "metrics", heading: "D. What users feel" },
   { key: "guardrails", heading: "E. Guard rails" },
+  { key: "frontend", heading: "F. Front-end (non-React)" },
 ];
 
 function anchorFor(rule, index) {

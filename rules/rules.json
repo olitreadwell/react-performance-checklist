@@ -207,6 +207,11 @@
         "kind": "docs",
         "label": "react-window",
         "url": "https://react-window.vercel.app/"
+      },
+      {
+        "kind": "docs",
+        "label": "TanStack Virtual",
+        "url": "https://tanstack.com/virtual"
       }
     ],
     "smellCode": "const sorted = items.sort((a, b) => a - b); // runs on every render",
@@ -302,6 +307,11 @@
         "kind": "guide",
         "label": "Lighthouse guide",
         "url": "guides/lighthouse.md"
+      },
+      {
+        "kind": "docs",
+        "label": "react-intersection-observer",
+        "url": "https://github.com/thebuilder/react-intersection-observer"
       }
     ],
     "smellCode": "<img src=\"hero.jpg\" />",
@@ -474,5 +484,144 @@
         "url": "https://react.doctor/ci"
       }
     ]
+  },
+  {
+    "id": "F-01",
+    "title": "Image formats and sizes",
+    "severity": "Medium",
+    "category": "frontend",
+    "smell": true,
+    "smellText": "Images served too big for the screen",
+    "summary": "Images in the wrong format, or one size for every screen.",
+    "why": "A 2000px JPEG for a 300px slot costs every user download time. WebP or AVIF is smaller, and srcset serves the right size per screen.",
+    "how": [
+      "Serve WebP or AVIF instead of JPEG or PNG where the format is supported.",
+      "Add srcset and sizes so small screens download small images.",
+      "Compress the source image. Aim for the smallest file that still looks right."
+    ],
+    "bullets": [
+      "srcset: a list of image sizes. The browser picks the one that fits the screen. [Definition](glossary.md)"
+    ],
+    "verify": "Lighthouse image audits pass, and the page downloads fewer bytes.",
+    "links": [
+      {
+        "kind": "docs",
+        "label": "web.dev image guidance",
+        "url": "https://web.dev/learn/images"
+      }
+    ],
+    "smellCode": "<img src=\"hero.jpg\" />",
+    "example": "// Bad: one huge image for every screen.\n<img src=\"hero.jpg\" />\n\n// Good: the browser picks the size that fits.\n<img\n  src=\"hero-800.webp\"\n  srcset=\"hero-400.webp 400w, hero-800.webp 800w, hero-1600.webp 1600w\"\n  sizes=\"(max-width: 600px) 100vw, 50vw\"\n/>"
+  },
+  {
+    "id": "F-02",
+    "title": "Font delivery",
+    "severity": "Medium",
+    "category": "frontend",
+    "smell": false,
+    "summary": "Fonts that block text, or load more glyphs than the page needs.",
+    "why": "A font that blocks first paint delays the text users came to read. font-display: swap shows fallback text first, and subsetting ships fewer bytes.",
+    "how": [
+      "Use font-display: swap so text shows while the font loads.",
+      "Preload the font file the page needs first.",
+      "Subset the font, or use a variable font, so you ship only the glyphs you use."
+    ],
+    "bullets": [
+      "font-display: swap: show fallback text immediately, swap in the real font when it loads. [Definition](glossary.md)"
+    ],
+    "verify": "Lighthouse font audits pass, and text appears before the font finishes loading.",
+    "links": [
+      {
+        "kind": "docs",
+        "label": "web.dev font best practices",
+        "url": "https://web.dev/articles/font-best-practices"
+      }
+    ],
+    "example": "/* Bad: text is invisible until the font loads. */\n@font-face {\n  font-family: \"Body\";\n  src: url(\"/fonts/body.woff2\");\n}\n\n/* Good: fallback text shows first, then the real font swaps in. */\n@font-face {\n  font-family: \"Body\";\n  src: url(\"/fonts/body.woff2\");\n  font-display: swap;\n}"
+  },
+  {
+    "id": "F-03",
+    "title": "CSS delivery",
+    "severity": "Medium",
+    "category": "frontend",
+    "smell": false,
+    "summary": "Render-blocking CSS, or CSS the page never uses.",
+    "why": "CSS blocks first paint. A big stylesheet delays the first useful frame, and unused rules cost download time for nothing.",
+    "how": [
+      "Inline the critical CSS for the first screen.",
+      "Load the rest of the CSS asynchronously.",
+      "Purge unused CSS in the build."
+    ],
+    "bullets": [
+      "Critical CSS: the styles the first screen needs, inlined so the page paints without waiting. [Definition](glossary.md)"
+    ],
+    "verify": "Lighthouse render-blocking audit passes, and the first paint is faster.",
+    "links": [
+      {
+        "kind": "docs",
+        "label": "web.dev render-blocking resources",
+        "url": "https://web.dev/articles/render-blocking-resources"
+      }
+    ],
+    "example": "<!-- Bad: the whole stylesheet blocks first paint. -->\n<link rel=\"stylesheet\" href=\"/app.css\" />\n\n<!-- Good: critical styles inline, the rest loads after. -->\n<style>/* critical styles for the first screen */</style>\n<link rel=\"stylesheet\" href=\"/app.css\" media=\"print\" onload=\"this.media='all'\" />"
+  },
+  {
+    "id": "F-04",
+    "title": "Delivery: caching and compression",
+    "severity": "Medium",
+    "category": "frontend",
+    "smell": false,
+    "summary": "No compression, no cache headers, or no CDN.",
+    "why": "Compression shrinks what travels over the network. Cache headers stop repeat visits from downloading the same bytes. A CDN puts the bytes near the user.",
+    "how": [
+      "Turn on gzip or brotli compression.",
+      "Set cache-control headers. Long cache for hashed assets, short for HTML.",
+      "Serve static assets from a CDN."
+    ],
+    "bullets": [
+      "CDN: a network of servers that serves files from the one nearest the user. [Definition](glossary.md)"
+    ],
+    "verify": "Lighthouse network audits pass, and repeat visits download fewer bytes.",
+    "links": [
+      {
+        "kind": "docs",
+        "label": "web.dev caching guidance",
+        "url": "https://web.dev/articles/http-cache"
+      }
+    ],
+    "example": "// Bad: every visit downloads the same bytes.\nCache-Control: no-store\n\n// Good: hashed assets stay cached for a year.\nCache-Control: public, max-age=31536000, immutable"
+  },
+  {
+    "id": "F-05",
+    "title": "Third-party scripts",
+    "severity": "Medium",
+    "category": "frontend",
+    "smell": true,
+    "smellText": "Heavy third-party scripts on every page",
+    "summary": "Heavy third-party scripts that block the main thread.",
+    "why": "Analytics, chat widgets, and ad scripts run on the main thread. Each one competes with your app for the user's attention.",
+    "how": [
+      "Load third-party scripts with defer or async so they do not block first paint.",
+      "Load them only on the pages that need them.",
+      "Remove the ones you do not use. Self-host the ones you keep."
+    ],
+    "bullets": [
+      "defer: download in the background, run after the page parses. [Definition](glossary.md)"
+    ],
+    "verify": "Lighthouse third-party audit passes, and the main thread is quieter.",
+    "links": [
+      {
+        "kind": "docs",
+        "label": "web.dev third-party guidance",
+        "url": "https://web.dev/articles/third-party-javascript"
+      },
+      {
+        "kind": "docs",
+        "label": "Partytown",
+        "url": "https://partytown.builder.io/"
+      }
+    ],
+    "smellCode": "<script src=\"https://analytics.example.com/tracker.js\"></script>",
+    "example": "<!-- Bad: blocks the page while it downloads and runs. -->\n<script src=\"https://analytics.example.com/tracker.js\"></script>\n\n<!-- Good: downloads in the background, runs after the page parses. -->\n<script defer src=\"https://analytics.example.com/tracker.js\"></script>"
   }
 ]

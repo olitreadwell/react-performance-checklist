@@ -84,6 +84,55 @@ Report findings by ID, for example: R-03.
 - Fix: restructure the work. Defer non-urgent work.
 - Evidence: long-task time. INP value.
 
+## G. Guard rails
+
+### G-01 [High] Lint with autofix
+- Detect: no eslint-plugin-react-hooks. No eslint-plugin-react-compiler. Broken dependency arrays.
+- Fix: add the plugins. Run with autofix. (See eslint.config.js in this repo.)
+- Evidence: lint output before and after.
+
+### G-02 [Medium] React Compiler
+- Detect: manual memoization everywhere, no compiler.
+- Fix: enable babel-plugin-react-compiler on React 19.
+- Evidence: Profiler render counts before and after.
+
+### G-03 [Medium] Perf tests
+- Detect: no test that fails when a component re-renders for no reason.
+- Fix: write a call-count test. (See test/perf-regression.test.jsx in this repo.)
+- Evidence: the test goes red on a regression, green after the fix.
+
+### G-04 [Medium] CI gates
+- Detect: no CI, or CI that runs only lint and tests.
+- Fix: add Lighthouse CI budgets. Add React Doctor as a required check.
+- Evidence: a slow change cannot merge.
+
+## F. Front-end (non-React)
+
+### F-01 [Medium] Image formats and sizes
+- Detect: images in the wrong format, or one size for every screen. No srcset.
+- Fix: serve WebP or AVIF. Add srcset and sizes. Compress the source.
+- Evidence: Lighthouse image audits. Bytes downloaded before and after.
+
+### F-02 [Medium] Font delivery
+- Detect: fonts that block text, or load more glyphs than the page needs.
+- Fix: font-display: swap. Preload the first font. Subset or use a variable font.
+- Evidence: Lighthouse font audits. Time to visible text.
+
+### F-03 [Medium] CSS delivery
+- Detect: render-blocking CSS, or CSS the page never uses.
+- Fix: inline critical CSS. Load the rest asynchronously. Purge unused CSS.
+- Evidence: Lighthouse render-blocking audit. First paint time.
+
+### F-04 [Medium] Delivery: caching and compression
+- Detect: no compression, no cache headers, or no CDN.
+- Fix: turn on gzip or brotli. Set cache-control headers. Serve static assets from a CDN.
+- Evidence: Lighthouse network audits. Repeat-visit bytes.
+
+### F-05 [Medium] Third-party scripts
+- Detect: heavy third-party scripts on every page, blocking the main thread.
+- Fix: defer or async. Load only where needed. Remove or self-host.
+- Evidence: Lighthouse third-party audit. Main-thread time.
+
 ## Report format
 
 For each finding, write one line:

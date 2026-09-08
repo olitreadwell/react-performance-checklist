@@ -56,6 +56,11 @@ Terms with a link open the official documentation.
 | Lazy loading | Waiting to load something until it is needed. | "Images below the fold load lazily." |
 | [Tree-shaking](https://developer.mozilla.org/en-US/docs/Glossary/Tree_shaking) | Removing code you never use from the bundle. | "Tree-shaking drops unused functions." |
 | [Hydration](https://react.dev/reference/react-dom/client/hydrateRoot) | The browser attaching React to HTML the server sent. | "Hydration runs once on load." |
+| [srcset](https://developer.mozilla.org/en-US/docs/Learn/HTML/Multimedia_and_embedding/Responsive_images) | A list of image sizes. The browser picks the one that fits the screen. | "srcset sends a small image to a phone." |
+| [font-display: swap](https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display) | Show fallback text immediately, swap in the real font when it loads. | "font-display: swap stops invisible text." |
+| Critical CSS | The styles the first screen needs, inlined so the page paints without waiting. | "Critical CSS is in the HTML head." |
+| [CDN](https://developer.mozilla.org/en-US/docs/Glossary/CDN) | A network of servers that serves files from the one nearest the user. | "The CDN serves the file from Auckland." |
+| [defer](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/defer) | Download in the background, run after the page parses. | "defer keeps the script off the critical path." |
 
 ## Numbers people measure
 

@@ -335,6 +335,7 @@ You now have a list of problems. Fix the High items below.
 - Verify: The flamegraph gets shorter. Typing stays smooth.
 
 - 📖 [react-window](https://react-window.vercel.app/)
+- 📖 [TanStack Virtual](https://tanstack.com/virtual)
 
 **[⬆ back to top](#table-of-contents)**
 
@@ -434,6 +435,7 @@ You now have a list of problems. Fix the High items below.
 - Verify: LCP and CLS improve in Lighthouse.
 
 - 🛠 [Lighthouse guide](guides/lighthouse.md)
+- 📖 [react-intersection-observer](https://github.com/thebuilder/react-intersection-observer)
 
 **[⬆ back to top](#table-of-contents)**
 
@@ -626,6 +628,153 @@ You now have a list of problems. Fix the High items below.
 - 📖 [React Doctor CI](https://react.doctor/ci)
 
 **[⬆ back to top](#table-of-contents)**
+
+## F. Front-end (non-React)
+
+### 17. Image formats and sizes [Medium]
+
+- [ ] Images in the wrong format, or one size for every screen.
+
+- srcset: a list of image sizes. The browser picks the one that fits the screen. [Definition](glossary.md)
+
+  _Why:_
+  > A 2000px JPEG for a 300px slot costs every user download time. WebP or AVIF is smaller, and srcset serves the right size per screen.
+
+  _How:_
+  > - Serve WebP or AVIF instead of JPEG or PNG where the format is supported.
+  > - Add srcset and sizes so small screens download small images.
+  > - Compress the source image. Aim for the smallest file that still looks right.
+
+  ```jsx
+  // Bad: one huge image for every screen.
+  <img src="hero.jpg" />
+
+  // Good: the browser picks the size that fits.
+  <img
+    src="hero-800.webp"
+    srcset="hero-400.webp 400w, hero-800.webp 800w, hero-1600.webp 1600w"
+    sizes="(max-width: 600px) 100vw, 50vw"
+  />
+  ```
+
+- Verify: Lighthouse image audits pass, and the page downloads fewer bytes.
+
+- 📖 [web.dev image guidance](https://web.dev/learn/images)
+
+### 18. Font delivery [Medium]
+
+- [ ] Fonts that block text, or load more glyphs than the page needs.
+
+- font-display: swap: show fallback text immediately, swap in the real font when it loads. [Definition](glossary.md)
+
+  _Why:_
+  > A font that blocks first paint delays the text users came to read. font-display: swap shows fallback text first, and subsetting ships fewer bytes.
+
+  _How:_
+  > - Use font-display: swap so text shows while the font loads.
+  > - Preload the font file the page needs first.
+  > - Subset the font, or use a variable font, so you ship only the glyphs you use.
+
+  ```jsx
+  /* Bad: text is invisible until the font loads. */
+  @font-face {
+    font-family: "Body";
+    src: url("/fonts/body.woff2");
+  }
+
+  /* Good: fallback text shows first, then the real font swaps in. */
+  @font-face {
+    font-family: "Body";
+    src: url("/fonts/body.woff2");
+    font-display: swap;
+  }
+  ```
+
+- Verify: Lighthouse font audits pass, and text appears before the font finishes loading.
+
+- 📖 [web.dev font best practices](https://web.dev/articles/font-best-practices)
+
+### 19. CSS delivery [Medium]
+
+- [ ] Render-blocking CSS, or CSS the page never uses.
+
+- Critical CSS: the styles the first screen needs, inlined so the page paints without waiting. [Definition](glossary.md)
+
+  _Why:_
+  > CSS blocks first paint. A big stylesheet delays the first useful frame, and unused rules cost download time for nothing.
+
+  _How:_
+  > - Inline the critical CSS for the first screen.
+  > - Load the rest of the CSS asynchronously.
+  > - Purge unused CSS in the build.
+
+  ```jsx
+  <!-- Bad: the whole stylesheet blocks first paint. -->
+  <link rel="stylesheet" href="/app.css" />
+
+  <!-- Good: critical styles inline, the rest loads after. -->
+  <style>/* critical styles for the first screen */</style>
+  <link rel="stylesheet" href="/app.css" media="print" onload="this.media='all'" />
+  ```
+
+- Verify: Lighthouse render-blocking audit passes, and the first paint is faster.
+
+- 📖 [web.dev render-blocking resources](https://web.dev/articles/render-blocking-resources)
+
+### 20. Delivery: caching and compression [Medium]
+
+- [ ] No compression, no cache headers, or no CDN.
+
+- CDN: a network of servers that serves files from the one nearest the user. [Definition](glossary.md)
+
+  _Why:_
+  > Compression shrinks what travels over the network. Cache headers stop repeat visits from downloading the same bytes. A CDN puts the bytes near the user.
+
+  _How:_
+  > - Turn on gzip or brotli compression.
+  > - Set cache-control headers. Long cache for hashed assets, short for HTML.
+  > - Serve static assets from a CDN.
+
+  ```jsx
+  // Bad: every visit downloads the same bytes.
+  Cache-Control: no-store
+
+  // Good: hashed assets stay cached for a year.
+  Cache-Control: public, max-age=31536000, immutable
+  ```
+
+- Verify: Lighthouse network audits pass, and repeat visits download fewer bytes.
+
+- 📖 [web.dev caching guidance](https://web.dev/articles/http-cache)
+
+### 21. Third-party scripts [Medium]
+
+- [ ] Heavy third-party scripts that block the main thread.
+
+- defer: download in the background, run after the page parses. [Definition](glossary.md)
+
+  _Why:_
+  > Analytics, chat widgets, and ad scripts run on the main thread. Each one competes with your app for the user's attention.
+
+  _How:_
+  > - Load third-party scripts with defer or async so they do not block first paint.
+  > - Load them only on the pages that need them.
+  > - Remove the ones you do not use. Self-host the ones you keep.
+
+  ```jsx
+  <!-- Bad: blocks the page while it downloads and runs. -->
+  <script src="https://analytics.example.com/tracker.js"></script>
+
+  <!-- Good: downloads in the background, runs after the page parses. -->
+  <script defer src="https://analytics.example.com/tracker.js"></script>
+  ```
+
+- Verify: Lighthouse third-party audit passes, and the main thread is quieter.
+
+- 📖 [web.dev third-party guidance](https://web.dev/articles/third-party-javascript)
+- 📖 [Partytown](https://partytown.builder.io/)
+
+**[⬆ back to top](#table-of-contents)**
 <!-- CHECKLIST:END -->
 
 <!-- SMELLS:START -->
@@ -667,6 +816,18 @@ You now have a list of problems. Fix the High items below.
 
   ```jsx
   <img src="hero.jpg" />
+  ```
+
+- [ ] Images served too big for the screen -> [item 17](#17-image-formats-and-sizes-medium)
+
+  ```jsx
+  <img src="hero.jpg" />
+  ```
+
+- [ ] Heavy third-party scripts on every page -> [item 21](#21-third-party-scripts-medium)
+
+  ```jsx
+  <script src="https://analytics.example.com/tracker.js"></script>
   ```
 <!-- SMELLS:END -->
 

@@ -1,0 +1,285 @@
+[
+  {
+    "id": "R-01",
+    "title": "Profile before you change code",
+    "severity": "High",
+    "category": "measure",
+    "smell": false,
+    "summary": "Record the slow moment, then read why each component rendered.",
+    "why": "You cannot fix what you cannot see. Guessing wastes time.",
+    "how": [
+      "Record the slow action. The slow action is the thing the user says feels slow: typing, opening a screen, applying a filter.",
+      "If nothing feels slow, record normal use for a minute.",
+      "At the top of the Profiler, one vertical bar per render. Taller means slower. That is the slowest commit.",
+      "In the flamegraph, horizontal bars. Wider means more time.",
+      "Read why the component rendered."
+    ],
+    "verify": "You can name the component and the reason.",
+    "links": {
+      "guide": "guides/react-dev-tools-profiler.md"
+    }
+  },
+  {
+    "id": "R-02",
+    "title": "Render count is not the cost",
+    "severity": "High",
+    "category": "measure",
+    "smell": false,
+    "summary": "A re-render is a problem only if it takes time.",
+    "why": "A small button rendered 5,000 times is cheap. A 10,000-row table rendered 5 times is expensive.",
+    "how": [
+      "Compare render time with the work inside.",
+      "Find the cost, not the count."
+    ],
+    "verify": "You can quote a number, not a feeling.",
+    "links": {}
+  },
+  {
+    "id": "R-03",
+    "title": "Unstable props",
+    "severity": "High",
+    "category": "rendering",
+    "smell": true,
+    "summary": "A prop that is a new object every render defeats memo.",
+    "why": "React compares identity, not content. A function or object written inline is a new object every render, so memo sees a change and cannot work.",
+    "how": [
+      "Hoist the value out of the component. Put it at the top of the file, or in the parent.",
+      "Use useCallback for functions.",
+      "Use useMemo for computed values.",
+      "Or turn on React Compiler and let it do this for you."
+    ],
+    "verify": "why-did-you-render goes quiet. React Scan shows no red flash there.",
+    "links": {
+      "guide": "guides/why-did-you-render.md",
+      "docs": "https://react.dev/reference/react/useCallback"
+    }
+  },
+  {
+    "id": "R-04",
+    "title": "Memo at the boundary",
+    "severity": "Medium",
+    "category": "rendering",
+    "smell": false,
+    "summary": "Wrap only expensive subtrees with changed props.",
+    "why": "A subtree is a component and everything it renders. The boundary is the component you wrap with memo. Re-renders stop there.",
+    "how": [
+      "Good: memo on a list row that gets stable props.",
+      "Bad: memo on a component whose parent passes inline props. The memo cannot help.",
+      "Bad: memo on a component whose props change every render anyway."
+    ],
+    "verify": "Render count drops where it matters, and the page still behaves.",
+    "links": {
+      "docs": "https://react.dev/reference/react/memo"
+    }
+  },
+  {
+    "id": "R-05",
+    "title": "Context re-renders every consumer",
+    "severity": "Medium",
+    "category": "rendering",
+    "smell": true,
+    "summary": "One big context re-renders every consumer on any change.",
+    "why": "A consumer is any component that reads the context. When the context value changes, every consumer re-renders. State is data a component owns. Context is the pipe that shares it.",
+    "how": [
+      "Move state down to the component that uses it.",
+      "Split one big context into smaller ones. Separate data from actions."
+    ],
+    "verify": "In the Profiler, a sibling consumer no longer re-renders.",
+    "links": {
+      "docs": "https://react.dev/learn/passing-data-deeply-with-context"
+    }
+  },
+  {
+    "id": "R-06",
+    "title": "Keys must be stable",
+    "severity": "High",
+    "category": "rendering",
+    "smell": true,
+    "summary": "key={index} in a list that reorders or filters.",
+    "why": "The index moves between items, so React rebuilds the wrong rows.",
+    "how": [
+      "Use the database id as the key.",
+      "If there is no id, create one with crypto.randomUUID() when the item is created.",
+      "Signs of an unexpected remount: the input loses focus, a checkbox unchecks, the scroll jumps, the Profiler shows a new mount."
+    ],
+    "verify": "No remounts in the Profiler after a reorder.",
+    "links": {
+      "docs": "https://react.dev/learn/rendering-lists"
+    }
+  },
+  {
+    "id": "R-07",
+    "title": "Heavy work in render",
+    "severity": "High",
+    "category": "rendering",
+    "smell": true,
+    "summary": "Sorting, filtering, formatting, or parsing during render.",
+    "why": "Code in the component body runs on every render. Look for .filter(), .sort(), .map() over big arrays, JSON.parse, date formatting.",
+    "how": [
+      "Move the work into useMemo if the result repeats for the same inputs.",
+      "Move it into an event handler, an effect, or a web worker if it runs once.",
+      "Move it into the build step if it never changes.",
+      "For long lists, render only the visible rows with react-window (virtualization)."
+    ],
+    "verify": "The flamegraph gets shorter. Typing stays smooth.",
+    "links": {
+      "docs": "https://react-window.vercel.app/"
+    }
+  },
+  {
+    "id": "L-01",
+    "title": "Split the code",
+    "severity": "High",
+    "category": "load",
+    "smell": true,
+    "summary": "All routes in one bundle.",
+    "why": "Code splitting loads code only when a route needs it. The first load is slow when everything ships at once.",
+    "how": [
+      "Use React.lazy and Suspense around routes.",
+      "Split at the route level, not every component.",
+      "If a chunk is small and rarely changes, leave it in the main bundle."
+    ],
+    "verify": "The first load downloads fewer bytes.",
+    "links": {
+      "docs": "https://react.dev/reference/react/lazy"
+    }
+  },
+  {
+    "id": "L-02",
+    "title": "Shrink the bundle",
+    "severity": "Medium",
+    "category": "load",
+    "smell": false,
+    "summary": "The bundle is bigger than the app needs.",
+    "why": "Tree-shaking removes code you never use. Big packages you barely use cost every user download time.",
+    "how": [
+      "Check with vite-bundle-visualizer or webpack-bundle-analyzer.",
+      "Remove or replace big packages.",
+      "Use per-package imports."
+    ],
+    "verify": "The bundle picture gets smaller.",
+    "links": {
+      "guide": "guides/bundle-visualizer.md"
+    }
+  },
+  {
+    "id": "L-03",
+    "title": "Images and fonts",
+    "severity": "Medium",
+    "category": "load",
+    "smell": true,
+    "summary": "Images without lazy loading, or critical fonts loading late.",
+    "why": "Lazy loading means the image loads only when it is near the screen. Large images and late fonts slow LCP and cause layout shift.",
+    "how": [
+      "Add loading=\"lazy\" to images below the fold.",
+      "Add sizes.",
+      "Preload the critical font."
+    ],
+    "verify": "LCP and CLS improve in Lighthouse.",
+    "links": {
+      "guide": "guides/lighthouse.md"
+    }
+  },
+  {
+    "id": "M-01",
+    "title": "Core Web Vitals",
+    "severity": "Medium",
+    "category": "metrics",
+    "smell": false,
+    "summary": "No field data and no budgets for LCP, INP, CLS.",
+    "why": "LCP is Largest Contentful Paint, when the main content appears. INP is Interaction to Next Paint, how fast the page answers a click. CLS is Cumulative Layout Shift, how much the page jumps.",
+    "how": [
+      "Track with web-vitals.",
+      "Set budgets in Lighthouse CI."
+    ],
+    "verify": "Budgets pass on every push.",
+    "links": {
+      "docs": "https://web.dev/articles/vitals"
+    }
+  },
+  {
+    "id": "M-02",
+    "title": "Long tasks",
+    "severity": "Medium",
+    "category": "metrics",
+    "smell": false,
+    "summary": "Work on the main thread that blocks the screen.",
+    "why": "An interaction is a click, a keypress, or a scroll. A handler is the function that runs when it happens. Blocking time is the time the page cannot respond because the main thread is busy.",
+    "how": [
+      "Open the Chrome Performance panel, record an interaction, read the blocking time.",
+      "Move the work out of the handler. Defer what is not urgent."
+    ],
+    "verify": "The blocking time drops, and INP follows.",
+    "links": {
+      "docs": "https://web.dev/articles/optimize-long-tasks"
+    }
+  },
+  {
+    "id": "G-01",
+    "title": "Lint with autofix",
+    "severity": "High",
+    "category": "guardrails",
+    "smell": false,
+    "summary": "Broken hook rules and dependency arrays are invisible while typing.",
+    "why": "A linter checks the code as you write it. Autofix applies the fix for you.",
+    "how": [
+      "Turn on eslint-plugin-react-hooks and eslint-plugin-react-compiler.",
+      "Config included: eslint.config.js."
+    ],
+    "verify": "Run npm run lint. Zero errors means it is on.",
+    "links": {
+      "docs": "https://www.npmjs.com/package/eslint-plugin-react-hooks"
+    }
+  },
+  {
+    "id": "G-02",
+    "title": "React Compiler",
+    "severity": "Medium",
+    "category": "guardrails",
+    "smell": false,
+    "summary": "Manual memoization is error-prone and noisy.",
+    "why": "React Compiler adds memoization at build time. Fewer re-renders without manual memo code.",
+    "how": [
+      "Enable babel-plugin-react-compiler on React 19."
+    ],
+    "verify": "The Profiler shows fewer re-renders with no manual memo code.",
+    "links": {
+      "docs": "https://react.dev/learn/react-compiler"
+    }
+  },
+  {
+    "id": "G-03",
+    "title": "Perf tests",
+    "severity": "Medium",
+    "category": "guardrails",
+    "smell": false,
+    "summary": "Perf fixes silently regress later.",
+    "why": "A test that fails when a component re-renders for no reason stops the regression before it ships.",
+    "how": [
+      "Write a call-count test. Example: test/perf-regression.test.jsx.",
+      "Use React.Profiler for duration asserts."
+    ],
+    "verify": "The test goes red on a regression, green after the fix.",
+    "links": {
+      "docs": "https://react.dev/reference/react/Profiler"
+    }
+  },
+  {
+    "id": "G-04",
+    "title": "CI gates",
+    "severity": "Medium",
+    "category": "guardrails",
+    "smell": false,
+    "summary": "A slow change can merge without anyone noticing.",
+    "why": "CI is checks that run on every push. It is the same commands you run locally, automated.",
+    "how": [
+      "Run lint and tests.",
+      "Add Lighthouse CI budgets.",
+      "Add React Doctor as a required check."
+    ],
+    "verify": "A slow change cannot merge.",
+    "links": {
+      "docs": "https://react.doctor/ci"
+    }
+  }
+]

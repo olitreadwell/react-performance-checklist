@@ -5,11 +5,13 @@
   "description": "Fix slow React apps: one-page checklist, beginner tool guides, and a coding-agent audit flow.",
   "type": "module",
   "scripts": {
+    "mcp": "node packages/mcp/server.mjs",
     "lint": "eslint .",
     "test": "vitest run",
     "check": "npm run lint && npm test"
   },
   "devDependencies": {
+    "@modelcontextprotocol/sdk": "1.30.0",
     "@testing-library/react": "16.3.3",
     "@vitejs/plugin-react": "6.1.1",
     "eslint": "9.39.5",
@@ -21,6 +23,7 @@
     "react-dom": "19.2.8",
     "vite": "8.2.2",
     "vitest": "5.0.0",
+    "zod": "4.5.4",
     "zod-validation-error": "4.0.2"
   }
 }

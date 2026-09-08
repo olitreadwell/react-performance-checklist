@@ -20,6 +20,8 @@ Rules for agents that work in this repository.
 
 - `audit-checklist.md` is the source of truth. Read it fully.
 - `audit-prompt.md` is the prompt to hand another agent.
+- `rules/rules.json` is the machine-readable rule corpus. Keep it in sync
+  with the README checklist.
 - Run `npx react-doctor@latest` and `npx react-scan@latest` for the scan.
   Do not write a new scanner.
 - Report findings by checklist ID. Give evidence. No evidence, no finding.

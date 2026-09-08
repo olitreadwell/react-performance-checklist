@@ -9,6 +9,17 @@ Every word has a plain meaning: [glossary.md](glossary.md)
 - The tooling: an ESLint config and a test, included so you can copy them. `npm install` installs only these.
 - The scanners (React Scan, React Doctor) are separate tools. One command each. No install.
 
+## Architecture
+
+Three surfaces, one rule corpus. Modeled on thedaviddias/front-end-checklist.
+
+- README: the checklist for humans, worked through in one page.
+- `rules/rules.json`: the same rules as structured data. Agents and tools read this.
+- MCP server: `packages/mcp/server.mjs` exposes the rules to MCP-capable agents.
+  Run it with `npm run mcp`, or add `.mcp.json` to your agent config.
+
+The MCP server has three tools: `list_rules`, `get_rule`, and `audit_plan`.
+
 ## Start here: you do not know what is slow
 
 If nothing feels slow, do this in order. Each step takes minutes.
@@ -335,6 +346,8 @@ For your own app, add:
 | --- | --- |
 | `react-performance-checklist.md` | The checklist as a single page (same content as above) |
 | `glossary.md` | Plain meanings for every word, with examples and official docs |
+| `rules/rules.json` | The 16 rules as structured data. Read by agents and the MCP server |
+| `packages/mcp/server.mjs` | MCP server: `list_rules`, `get_rule`, `audit_plan` |
 | `guides/` | One beginner guide per tool |
 | `eslint.config.js` | Lint rules with autofix |
 | `test/perf-regression.test.jsx` | A test that shows a smell and its fix |

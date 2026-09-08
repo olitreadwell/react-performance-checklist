@@ -1433,23 +1433,13 @@ the job. Run the audit, then hand the findings to the right skill.
 
 ## Sources
 
-What this repo took from existing checklists and skills. The rule corpus
-points at these per rule; the hand-off table above points at the skills an
-agent should actually run.
+What this repo took from existing checklists and skills. One source per topic; the rule corpus points at these per rule, and the hand-off table above points at the skills an agent should actually run.
 
 | Source | What we took from it |
 | --- | --- |
-| [React Performance Checklist](https://marceloretana.com/checklist/react-performance-checklist) | Render-section coverage: memo, contexts, keys, lists, and the note that render count is not the cost. |
-| [performance-checklist](https://github.com/flowforfrank/performance-checklist) | General front-end load items: images, fonts, CSS, caching, third-party. |
-| [react-perf-hooks checklist](https://valyefimov.github.io/react-perf-hooks/docs/guides/performance-checklist) | Hook correctness: when useMemo and useCallback actually pay off. |
-| [React Performance Checklist](https://react.codeguides.io/react-performance/performance-checklist/) | Rendering and state items: lazy state init, transitions, derived state. |
-| [ecc-explorer catalog: react-performance skill](https://esandorfi.github.io/ecc-explorer/catalog/skills/react-performance/) | Evidence that performance agent skills exist and are discoverable; feeds the hand-off section. |
-| [Complete React performance optimisation guide](https://dev.to/ufomadu_nnaemeka_89/react-performance-optimisation-checklist-a-complete-guide-for-building-faster-react-applications-54g6) | Lazy loading, images, bundle size, and memory items. |
-| [React Performance Checklist](https://dev.to/kiransm/react-performance-checklist-5a48) | List performance and hook sections: memo at the boundary, stable keys. |
-| [Introducing React Best Practices](https://vercel.com/blog/introducing-react-best-practices) | Waterfalls, data fetching, and caching items: D-01 to D-03. |
-| [vercel-labs/agent-skills react-best-practices](https://github.com/vercel-labs/agent-skills/tree/main/skills/react-best-practices) | The 70-rule agent skill: barrel imports, cheap-conditions-before-await, passive listeners, and the deep hand-off target for agents. |
-| [Front-End Performance Checklist](https://github.com/thedaviddias/front-end-performance-checklist) | The F-section (non-React) items and the repo's structure. |
-| [frontend.fast](https://frontend.fast/) | The modern, filterable version of the Front-End Performance Checklist: 72 items across HTML, images, video, fonts, network, animation, and Core Web Vitals. Feeds the F-section and the hand-off guidance. |
+| [Front-End Performance Checklist](https://github.com/thedaviddias/front-end-performance-checklist) | The F-section (non-React) items and the repo's structure. The reputable original this repo is modeled on. |
+| [vercel-labs/agent-skills react-best-practices](https://github.com/vercel-labs/agent-skills/tree/main/skills/react-best-practices) | The 70-rule agent skill: waterfalls and data fetching (D-01 to D-03), barrels (L-05), renders and state (R-08, R-09, S-01 to S-04), plus the deep hand-off target for agents. Official Vercel, MIT, active. |
+| [frontend.fast](https://frontend.fast/) | The modern, filterable version of the Front-End Performance Checklist: 72 items across HTML, images, video, fonts, network, animation, and Core Web Vitals. Adds the video and animation categories. |
 
 Base references:
 

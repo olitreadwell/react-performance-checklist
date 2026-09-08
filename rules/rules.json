@@ -8,16 +8,25 @@
     "summary": "Record the slow moment, then read why each component rendered.",
     "why": "You cannot fix what you cannot see. Guessing wastes time.",
     "how": [
-      "Record the slow action. The slow action is the thing the user says feels slow: typing, opening a screen, applying a filter.",
+      "Record the slow action.",
       "If nothing feels slow, record normal use for a minute.",
       "At the top of the Profiler, one vertical bar per render. Taller means slower. That is the slowest commit.",
+      "Click the tallest bar.",
       "In the flamegraph, horizontal bars. Wider means more time.",
       "Read why the component rendered."
     ],
+    "bullets": [
+      "Slow action: the thing the user says feels slow. Typing, opening a screen, applying a filter.",
+      "If nothing feels slow: record normal use for a minute, then open the slowest render."
+    ],
     "verify": "You can name the component and the reason.",
-    "links": {
-      "guide": "guides/react-dev-tools-profiler.md"
-    }
+    "links": [
+      {
+        "kind": "guide",
+        "label": "React DevTools Profiler guide",
+        "url": "guides/react-dev-tools-profiler.md"
+      }
+    ]
   },
   {
     "id": "R-02",
@@ -31,8 +40,14 @@
       "Compare render time with the work inside.",
       "Find the cost, not the count."
     ],
+    "bullets": [
+      "Render time: how long one render takes.",
+      "Work: what the component does during render. Sorting, filtering, building JSX.",
+      "Count: how many times it renders.",
+      "Cost: the time it actually takes."
+    ],
     "verify": "You can quote a number, not a feeling.",
-    "links": {}
+    "links": []
   },
   {
     "id": "R-03",
@@ -40,6 +55,7 @@
     "severity": "High",
     "category": "rendering",
     "smell": true,
+    "smellText": "Unstable props into a memoized component",
     "summary": "A prop that is a new object every render defeats memo.",
     "why": "React compares identity, not content. A function or object written inline is a new object every render, so memo sees a change and cannot work.",
     "how": [
@@ -48,11 +64,36 @@
       "Use useMemo for computed values.",
       "Or turn on React Compiler and let it do this for you."
     ],
+    "bullets": [
+      "What identity means: whether two values are the same object. Two objects with the same words are different objects. A function written inside a component is a new object every render. React compares identity, not content, so memo sees a change and cannot work.",
+      "Smell: inline code in JSX."
+    ],
+    "note": "Looks bad but fine, leave it alone:\n\n- `onClick={() => ...}` passed to a component that is NOT memoized. No memo, no problem.\n- A string or number prop. Primitives compare by value, not identity.",
     "verify": "why-did-you-render goes quiet. React Scan shows no red flash there.",
-    "links": {
-      "guide": "guides/why-did-you-render.md",
-      "docs": "https://react.dev/reference/react/useCallback"
-    }
+    "links": [
+      {
+        "kind": "guide",
+        "label": "why-did-you-render guide",
+        "url": "guides/why-did-you-render.md"
+      },
+      {
+        "kind": "docs",
+        "label": "useCallback docs",
+        "url": "https://react.dev/reference/react/useCallback"
+      },
+      {
+        "kind": "docs",
+        "label": "useMemo docs",
+        "url": "https://react.dev/reference/react/useMemo"
+      },
+      {
+        "kind": "docs",
+        "label": "React Compiler docs",
+        "url": "https://react.dev/learn/react-compiler"
+      }
+    ],
+    "smellCode": "onClick={() => ...}\nstyle={{...}}",
+    "codeExample": "// Bad: new function each render\n<Row onClick={() => save()} />\n\n// Good: same function every render\nconst save = useCallback(() => doSave(), []);\n<Row onClick={save} />\n\n// Bad: new object each render\n<Row style={{ color: \"red\" }} />\n\n// Good: same object every render\nconst RED = { color: \"red\" };\n<Row style={RED} />\n\n// Bad: new array each render\n<Row items={[\"a\", \"b\"]} />\n\n// Good: same array every render\nconst ITEMS = [\"a\", \"b\"];\n<Row items={ITEMS} />"
   },
   {
     "id": "R-04",
@@ -67,10 +108,18 @@
       "Bad: memo on a component whose parent passes inline props. The memo cannot help.",
       "Bad: memo on a component whose props change every render anyway."
     ],
+    "bullets": [
+      "Subtree: a component and everything it renders.",
+      "Boundary: the component you wrap with memo. Re-renders stop at the boundary."
+    ],
     "verify": "Render count drops where it matters, and the page still behaves.",
-    "links": {
-      "docs": "https://react.dev/reference/react/memo"
-    }
+    "links": [
+      {
+        "kind": "docs",
+        "label": "memo docs",
+        "url": "https://react.dev/reference/react/memo"
+      }
+    ]
   },
   {
     "id": "R-05",
@@ -78,16 +127,28 @@
     "severity": "Medium",
     "category": "rendering",
     "smell": true,
+    "smellText": "One context holding many values",
     "summary": "One big context re-renders every consumer on any change.",
     "why": "A consumer is any component that reads the context. When the context value changes, every consumer re-renders. State is data a component owns. Context is the pipe that shares it.",
     "how": [
       "Move state down to the component that uses it.",
       "Split one big context into smaller ones. Separate data from actions."
     ],
+    "bullets": [
+      "State and context are not the same. State is data a component owns. Context is the pipe that shares it.",
+      "Consumer: any component that reads the context.",
+      "What happens: when the context value changes, every consumer re-renders."
+    ],
+    "example": "// Before: one context holds everything. Any change re-renders all consumers.\nconst AppContext = createContext({ user, theme, save, logout });\n\n// After: two contexts. A theme change re-renders only theme consumers.\nconst UserContext = createContext(null);\nconst ThemeContext = createContext(\"light\");\n\nfunction App() {\n  const [user, setUser] = useState(null);\n  const [theme, setTheme] = useState(\"light\");\n  return (\n    <UserContext.Provider value={{ user, setUser }}>\n      <ThemeContext.Provider value={{ theme, setTheme }}>\n        <Page />\n      </ThemeContext.Provider>\n    </UserContext.Provider>\n  );\n}",
     "verify": "In the Profiler, a sibling consumer no longer re-renders.",
-    "links": {
-      "docs": "https://react.dev/learn/passing-data-deeply-with-context"
-    }
+    "links": [
+      {
+        "kind": "docs",
+        "label": "Context docs",
+        "url": "https://react.dev/learn/passing-data-deeply-with-context"
+      }
+    ],
+    "smellCode": "const AppContext = createContext({ user, theme, save, logout });"
   },
   {
     "id": "R-06",
@@ -95,6 +156,7 @@
     "severity": "High",
     "category": "rendering",
     "smell": true,
+    "smellText": "Index used as a key in a reordering list",
     "summary": "key={index} in a list that reorders or filters.",
     "why": "The index moves between items, so React rebuilds the wrong rows.",
     "how": [
@@ -102,10 +164,20 @@
       "If there is no id, create one with crypto.randomUUID() when the item is created.",
       "Signs of an unexpected remount: the input loses focus, a checkbox unchecks, the scroll jumps, the Profiler shows a new mount."
     ],
+    "bullets": [
+      "Unexpected remount: the component loses its state. Signs: the input loses focus while you type, a checkbox unchecks, the scroll jumps, the Profiler shows a new mount.",
+      "How to check: type in a row's input, then reorder the list. If the input loses focus, the row remounted."
+    ],
+    "example": "// Give each item an id once, when it is created:\nconst [items, setItems] = useState(() => [\n  { id: crypto.randomUUID(), text: \"first\" },\n  { id: crypto.randomUUID(), text: \"second\" },\n]);\n\n// Add new items the same way:\nsetItems((prev) => [...prev, { id: crypto.randomUUID(), text: \"new\" }]);\n\n// Use the id as the key:\n{items.map((item) => <Row key={item.id} item={item} />)}",
     "verify": "No remounts in the Profiler after a reorder.",
-    "links": {
-      "docs": "https://react.dev/learn/rendering-lists"
-    }
+    "links": [
+      {
+        "kind": "docs",
+        "label": "Rendering lists docs",
+        "url": "https://react.dev/learn/rendering-lists"
+      }
+    ],
+    "smellCode": "items.map((item, index) => <Row key={index} item={item} />)"
   },
   {
     "id": "R-07",
@@ -113,6 +185,7 @@
     "severity": "High",
     "category": "rendering",
     "smell": true,
+    "smellText": "Sorting or filtering inside the render body",
     "summary": "Sorting, filtering, formatting, or parsing during render.",
     "why": "Code in the component body runs on every render. Look for .filter(), .sort(), .map() over big arrays, JSON.parse, date formatting.",
     "how": [
@@ -121,10 +194,21 @@
       "Move it into the build step if it never changes.",
       "For long lists, render only the visible rows with react-window (virtualization)."
     ],
+    "bullets": [
+      "Heavy work: sorting, filtering, formatting, or parsing during render.",
+      "How to tell: code in the component body runs on every render. Look for `.filter(`, `.sort(`, `.map(` over big arrays, `JSON.parse`, date formatting.",
+      "Where to start: the component that owns the list (the parent of the rows). Then follow the widest bars in the flamegraph.",
+      "Long lists: [virtualization](glossary.md), render only the visible rows with [react-window](https://react-window.vercel.app/)."
+    ],
     "verify": "The flamegraph gets shorter. Typing stays smooth.",
-    "links": {
-      "docs": "https://react-window.vercel.app/"
-    }
+    "links": [
+      {
+        "kind": "docs",
+        "label": "react-window",
+        "url": "https://react-window.vercel.app/"
+      }
+    ],
+    "smellCode": "const sorted = items.sort((a, b) => a - b); // runs on every render"
   },
   {
     "id": "L-01",
@@ -132,6 +216,7 @@
     "severity": "High",
     "category": "load",
     "smell": true,
+    "smellText": "All routes in one bundle",
     "summary": "All routes in one bundle.",
     "why": "Code splitting loads code only when a route needs it. The first load is slow when everything ships at once.",
     "how": [
@@ -139,10 +224,21 @@
       "Split at the route level, not every component.",
       "If a chunk is small and rarely changes, leave it in the main bundle."
     ],
+    "bullets": [
+      "Code splitting: loading code only when a route needs it. [Definition](glossary.md)",
+      "How to know you need it: the first load is slow, the bundle is big, or a heavy screen is rarely used.",
+      "How to know you went overboard: too many tiny chunks means too many network requests. Split at the route level, not every component. If a chunk is small and rarely changes, leave it in the main bundle."
+    ],
+    "example": "import { lazy, Suspense } from \"react\";\n\nconst Settings = lazy(() => import(\"./Settings\"));\n\nfunction App() {\n  return (\n    <Suspense fallback={<p>Loading...</p>}>\n      <Settings />\n    </Suspense>\n  );\n}",
     "verify": "The first load downloads fewer bytes.",
-    "links": {
-      "docs": "https://react.dev/reference/react/lazy"
-    }
+    "links": [
+      {
+        "kind": "docs",
+        "label": "React.lazy docs",
+        "url": "https://react.dev/reference/react/lazy"
+      }
+    ],
+    "smellCode": "import Settings from \"./Settings\";\nimport Profile from \"./Profile\"; // both load on first visit"
   },
   {
     "id": "L-02",
@@ -157,10 +253,27 @@
       "Remove or replace big packages.",
       "Use per-package imports."
     ],
+    "bullets": [
+      "Tree-shaking: the build removes code you never use. [Definition](glossary.md)"
+    ],
     "verify": "The bundle picture gets smaller.",
-    "links": {
-      "guide": "guides/bundle-visualizer.md"
-    }
+    "links": [
+      {
+        "kind": "guide",
+        "label": "Bundle visualizer guide",
+        "url": "guides/bundle-visualizer.md"
+      },
+      {
+        "kind": "docs",
+        "label": "vite-bundle-visualizer",
+        "url": "https://www.npmjs.com/package/vite-bundle-visualizer"
+      },
+      {
+        "kind": "docs",
+        "label": "webpack-bundle-analyzer",
+        "url": "https://www.npmjs.com/package/webpack-bundle-analyzer"
+      }
+    ]
   },
   {
     "id": "L-03",
@@ -168,6 +281,7 @@
     "severity": "Medium",
     "category": "load",
     "smell": true,
+    "smellText": "Images without lazy loading",
     "summary": "Images without lazy loading, or critical fonts loading late.",
     "why": "Lazy loading means the image loads only when it is near the screen. Large images and late fonts slow LCP and cause layout shift.",
     "how": [
@@ -175,10 +289,18 @@
       "Add sizes.",
       "Preload the critical font."
     ],
+    "bullets": [
+      "Lazy loading: the image loads only when it is near the screen. [Definition](glossary.md)"
+    ],
     "verify": "LCP and CLS improve in Lighthouse.",
-    "links": {
-      "guide": "guides/lighthouse.md"
-    }
+    "links": [
+      {
+        "kind": "guide",
+        "label": "Lighthouse guide",
+        "url": "guides/lighthouse.md"
+      }
+    ],
+    "smellCode": "<img src=\"hero.jpg\" />"
   },
   {
     "id": "M-01",
@@ -192,10 +314,29 @@
       "Track with web-vitals.",
       "Set budgets in Lighthouse CI."
     ],
+    "bullets": [
+      "LCP: Largest Contentful Paint. When the main content appears. Under 2.5 s.",
+      "INP: Interaction to Next Paint. How fast the page answers a click. Under 200 ms.",
+      "CLS: Cumulative Layout Shift. How much the page jumps. Under 0.1."
+    ],
     "verify": "Budgets pass on every push.",
-    "links": {
-      "docs": "https://web.dev/articles/vitals"
-    }
+    "links": [
+      {
+        "kind": "docs",
+        "label": "web.dev vitals",
+        "url": "https://web.dev/articles/vitals"
+      },
+      {
+        "kind": "docs",
+        "label": "web-vitals package",
+        "url": "https://www.npmjs.com/package/web-vitals"
+      },
+      {
+        "kind": "docs",
+        "label": "Lighthouse CI",
+        "url": "https://github.com/GoogleChrome/lighthouse-ci"
+      }
+    ]
   },
   {
     "id": "M-02",
@@ -209,10 +350,21 @@
       "Open the Chrome Performance panel, record an interaction, read the blocking time.",
       "Move the work out of the handler. Defer what is not urgent."
     ],
+    "bullets": [
+      "Long task: work on the main thread that blocks the screen for a moment. [Definition](glossary.md)",
+      "Interaction: a click, a keypress, a scroll.",
+      "Handler: the function that runs when the interaction happens.",
+      "Blocking time: the time the page cannot respond because the main thread is busy.",
+      "Example: a click handler that loops over 100,000 items blocks the page. Move the loop to a worker, or chunk it."
+    ],
     "verify": "The blocking time drops, and INP follows.",
-    "links": {
-      "docs": "https://web.dev/articles/optimize-long-tasks"
-    }
+    "links": [
+      {
+        "kind": "docs",
+        "label": "Optimize long tasks",
+        "url": "https://web.dev/articles/optimize-long-tasks"
+      }
+    ]
   },
   {
     "id": "G-01",
@@ -226,10 +378,22 @@
       "Turn on eslint-plugin-react-hooks and eslint-plugin-react-compiler.",
       "Config included: eslint.config.js."
     ],
+    "bullets": [
+      "How to run without pushing: run it locally. CI is the same commands, automated."
+    ],
     "verify": "Run npm run lint. Zero errors means it is on.",
-    "links": {
-      "docs": "https://www.npmjs.com/package/eslint-plugin-react-hooks"
-    }
+    "links": [
+      {
+        "kind": "docs",
+        "label": "eslint-plugin-react-hooks",
+        "url": "https://www.npmjs.com/package/eslint-plugin-react-hooks"
+      },
+      {
+        "kind": "docs",
+        "label": "eslint-plugin-react-compiler",
+        "url": "https://www.npmjs.com/package/eslint-plugin-react-compiler"
+      }
+    ]
   },
   {
     "id": "G-02",
@@ -242,10 +406,15 @@
     "how": [
       "Enable babel-plugin-react-compiler on React 19."
     ],
+    "bullets": [],
     "verify": "The Profiler shows fewer re-renders with no manual memo code.",
-    "links": {
-      "docs": "https://react.dev/learn/react-compiler"
-    }
+    "links": [
+      {
+        "kind": "docs",
+        "label": "React Compiler docs",
+        "url": "https://react.dev/learn/react-compiler"
+      }
+    ]
   },
   {
     "id": "G-03",
@@ -259,10 +428,17 @@
       "Write a call-count test. Example: test/perf-regression.test.jsx.",
       "Use React.Profiler for duration asserts."
     ],
+    "bullets": [
+      "How to run without pushing: `npm test`."
+    ],
     "verify": "The test goes red on a regression, green after the fix.",
-    "links": {
-      "docs": "https://react.dev/reference/react/Profiler"
-    }
+    "links": [
+      {
+        "kind": "docs",
+        "label": "React.Profiler docs",
+        "url": "https://react.dev/reference/react/Profiler"
+      }
+    ]
   },
   {
     "id": "G-04",
@@ -277,9 +453,17 @@
       "Add Lighthouse CI budgets.",
       "Add React Doctor as a required check."
     ],
+    "bullets": [
+      "CI: checks that run on every push. [Definition](glossary.md)",
+      "How to run without pushing: run the same commands locally. CI is just automation of them."
+    ],
     "verify": "A slow change cannot merge.",
-    "links": {
-      "docs": "https://react.doctor/ci"
-    }
+    "links": [
+      {
+        "kind": "docs",
+        "label": "React Doctor CI",
+        "url": "https://react.doctor/ci"
+      }
+    ]
   }
 ]

@@ -8,7 +8,8 @@
     "mcp": "node packages/mcp/server.mjs",
     "lint": "eslint .",
     "test": "vitest run",
-    "check": "npm run lint && npm test"
+    "check": "npm run lint && npm test",
+    "generate": "node scripts/generate-readme.mjs"
   },
   "devDependencies": {
     "@modelcontextprotocol/sdk": "1.30.0",

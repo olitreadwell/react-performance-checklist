@@ -3,34 +3,58 @@
 One page to fix a slow React app. For new developers and for agents.
 Every word has a plain meaning: [glossary.md](glossary.md)
 
-## What this repo is
+**Other checklists:**
+- [Front-End Checklist](https://github.com/thedaviddias/front-end-checklist)
+- [Front-End Performance Checklist](https://github.com/thedaviddias/front-end-performance-checklist)
 
-- The docs: the checklist, guides, and glossary. Nothing to install to read them.
-- The tooling: an ESLint config and a test, included so you can copy them. `npm install` installs only these.
-- The scanners (React Scan, React Doctor) are separate tools. One command each. No install.
+## Table of Contents
 
-## Architecture
+- [How to use](#how-to-use)
+- [Start here: you do not know what is slow](#start-here-you-do-not-know-what-is-slow)
+- [Quick start](#quick-start)
+- [A. Measure first](#a-measure-first)
+- [B. Fix renders](#b-fix-renders)
+- [C. Load time](#c-load-time)
+- [D. What users feel](#d-what-users-feel)
+- [E. Guard rails](#e-guard-rails)
+- [Code smells at a glance](#code-smells-at-a-glance)
+- [Tools](#tools)
+- [IDE and browser extensions](#ide-and-browser-extensions)
+- [CI](#ci)
+- [For agents](#for-agents)
+- [Files in this repo](#files-in-this-repo)
+- [References](#references)
+- [License](#license)
 
-Three surfaces, one rule corpus. Modeled on thedaviddias/front-end-checklist.
+## How to use
 
-- README: the checklist for humans, worked through in one page.
-- `rules/rules.json`: the same rules as structured data. Agents and tools read this.
-- MCP server: `packages/mcp/server.mjs` exposes the rules to MCP-capable agents.
-  Run it with `npm run mcp`, or add `.mcp.json` to your agent config.
+For each rule, you get the problem, the smell, the fix, and the check.
+Links point to guides, tools, and official docs.
 
-The MCP server has three tools: `list_rules`, `get_rule`, and `audit_plan`.
+Priority levels:
+
+- **High**: fix first. These cause the most visible problems.
+- **Medium**: fix after the High items. They stop the next problem.
 
 ## Start here: you do not know what is slow
 
 If nothing feels slow, do this in order. Each step takes minutes.
 
 1. Run React Doctor. It finds code smells without a browser:
-   `npx react-doctor@latest`
+
+   ```bash
+   npx react-doctor@latest
+   ```
+
 2. Run React Scan against your running app. It shows re-render hotspots:
-   `npx react-scan@latest http://localhost:3000`
+
+   ```bash
+   npx react-scan@latest http://localhost:3000
+   ```
+
 3. Run Lighthouse on the page. It measures load time:
    open DevTools, click the Lighthouse tab, generate a report.
-4. Record the Profiler during normal use. Open the slowest render. See item 1.
+4. Record the Profiler during normal use. Open the slowest render. See [item 1](#1-profile-before-you-change-code-high).
 
 You now have a list of problems. Fix the High items in the checklist.
 
@@ -57,238 +81,459 @@ What each command does:
 - `npm install` installs this repo's own dev dependencies (ESLint, Vitest). Only needed for step 3.
 - `npm run check` runs the included lint and tests. Both must pass.
 
-## The checklist
+<!-- CHECKLIST:START -->
+## A. Measure first
 
-Work top to bottom. Each item has the problem, the smell, the fix, and the check.
+### 1. Profile before you change code [High]
 
-### A. Measure first
-
-#### 1. Profile before you change code [High]
+- [ ] Record the slow moment, then read why each component rendered.
 
 - Slow action: the thing the user says feels slow. Typing, opening a screen, applying a filter.
 - If nothing feels slow: record normal use for a minute, then open the slowest render.
-- Tool: [React DevTools Profiler](guides/react-dev-tools-profiler.md)
-- Do:
-  1. Record the slow action.
-  2. At the top of the Profiler, one vertical bar per render. Taller = slower. That is the slowest commit.
-  3. Click the tallest bar.
-  4. In the flamegraph, horizontal bars. Wider = more time.
-  5. Read why the component rendered.
-- Done when: you can name the component and the reason.
 
-#### 2. Render count is not the cost [High]
+  _Why:_
+  > You cannot fix what you cannot see. Guessing wastes time.
+
+  _How:_
+  > - Record the slow action.
+  > - If nothing feels slow, record normal use for a minute.
+  > - At the top of the Profiler, one vertical bar per render. Taller means slower. That is the slowest commit.
+  > - Click the tallest bar.
+  > - In the flamegraph, horizontal bars. Wider means more time.
+  > - Read why the component rendered.
+
+- Verify: You can name the component and the reason.
+
+- 🛠 [React DevTools Profiler guide](guides/react-dev-tools-profiler.md)
+
+### 2. Render count is not the cost [High]
+
+- [ ] A re-render is a problem only if it takes time.
 
 - Render time: how long one render takes.
 - Work: what the component does during render. Sorting, filtering, building JSX.
 - Count: how many times it renders.
 - Cost: the time it actually takes.
-- Example: a small button rendered 5,000 times is cheap. A 10,000-row table rendered 5 times is expensive.
-- Done when: you can quote a number, not a feeling.
 
-### B. Fix renders
+  _Why:_
+  > A small button rendered 5,000 times is cheap. A 10,000-row table rendered 5 times is expensive.
 
-#### 3. Unstable props [High], a code smell
+  _How:_
+  > - Compare render time with the work inside.
+  > - Find the cost, not the count.
+
+- Verify: You can quote a number, not a feeling.
+
+
+**[⬆ back to top](#table-of-contents)**
+
+## B. Fix renders
+
+### 3. Unstable props [High]
+
+- [ ] A prop that is a new object every render defeats memo.
 
 - What identity means: whether two values are the same object. Two objects with the same words are different objects. A function written inside a component is a new object every render. React compares identity, not content, so memo sees a change and cannot work.
 - Smell: inline code in JSX.
 
-| Bad (new object every render) | Why | Good (same object every render) |
-| --- | --- | --- |
-| `<Row onClick={() => save()} />` | new function each render | `const save = useCallback(() => doSave(), [])` then `<Row onClick={save} />` |
-| `<Row style={{ color: "red" }} />` | new object each render | `const RED = { color: "red" }` at the top of the file, then `<Row style={RED} />` |
-| `<Row items={["a", "b"]} />` | new array each render | `const ITEMS = ["a", "b"]` at the top of the file |
+  _Why:_
+  > React compares identity, not content. A function or object written inline is a new object every render, so memo sees a change and cannot work.
 
-Looks bad but fine, leave it alone:
+  _How:_
+  > - Hoist the value out of the component. Put it at the top of the file, or in the parent.
+  > - Use useCallback for functions.
+  > - Use useMemo for computed values.
+  > - Or turn on React Compiler and let it do this for you.
 
-- `onClick={() => ...}` passed to a component that is NOT memoized. No memo, no problem.
-- A string or number prop. Primitives compare by value, not identity.
+  ```jsx
+  // Bad: new function each render
+  <Row onClick={() => save()} />
 
-- Fix, in order: hoist the value out of the component. Use [useCallback](https://react.dev/reference/react/useCallback) for functions. Use [useMemo](https://react.dev/reference/react/useMemo) for computed values. Or turn on [React Compiler](https://react.dev/learn/react-compiler).
-- Verify: [why-did-you-render](guides/why-did-you-render.md) goes quiet. React Scan shows no red flash there.
+  // Good: same function every render
+  const save = useCallback(() => doSave(), []);
+  <Row onClick={save} />
 
-#### 4. Memo at the boundary [Medium]
+  // Bad: new object each render
+  <Row style={{ color: "red" }} />
+
+  // Good: same object every render
+  const RED = { color: "red" };
+  <Row style={RED} />
+
+  // Bad: new array each render
+  <Row items={["a", "b"]} />
+
+  // Good: same array every render
+  const ITEMS = ["a", "b"];
+  <Row items={ITEMS} />
+  ```
+
+  Looks bad but fine, leave it alone:
+
+  - `onClick={() => ...}` passed to a component that is NOT memoized. No memo, no problem.
+  - A string or number prop. Primitives compare by value, not identity.
+
+- Verify: why-did-you-render goes quiet. React Scan shows no red flash there.
+
+- 🛠 [why-did-you-render guide](guides/why-did-you-render.md)
+- 📖 [useCallback docs](https://react.dev/reference/react/useCallback)
+- 📖 [useMemo docs](https://react.dev/reference/react/useMemo)
+- 📖 [React Compiler docs](https://react.dev/learn/react-compiler)
+
+### 4. Memo at the boundary [Medium]
+
+- [ ] Wrap only expensive subtrees with changed props.
 
 - Subtree: a component and everything it renders.
 - Boundary: the component you wrap with memo. Re-renders stop at the boundary.
-- Good: memo on a list row that gets stable props.
-- Bad: memo on a component whose parent passes inline props. The memo cannot help.
-- Bad: memo on a component whose props change every render anyway.
-- Do: wrap only expensive subtrees with changed props. Not everything.
 
-#### 5. Context re-renders every consumer [Medium]
+  _Why:_
+  > A subtree is a component and everything it renders. The boundary is the component you wrap with memo. Re-renders stop there.
 
-- State and context are not the same.
-  - State: data a component owns. `useState`.
-  - Context: a way to share data with many components. It often holds state, but it is the pipe, not the data.
+  _How:_
+  > - Good: memo on a list row that gets stable props.
+  > - Bad: memo on a component whose parent passes inline props. The memo cannot help.
+  > - Bad: memo on a component whose props change every render anyway.
+
+- Verify: Render count drops where it matters, and the page still behaves.
+
+- 📖 [memo docs](https://react.dev/reference/react/memo)
+
+### 5. Context re-renders every consumer [Medium]
+
+- [ ] One big context re-renders every consumer on any change.
+
+- State and context are not the same. State is data a component owns. Context is the pipe that shares it.
 - Consumer: any component that reads the context.
 - What happens: when the context value changes, every consumer re-renders.
-- How to split one big context:
 
-```jsx
-// Before: one context holds everything. Any change re-renders all consumers.
-const AppContext = createContext({ user, theme, save, logout });
+  _Why:_
+  > A consumer is any component that reads the context. When the context value changes, every consumer re-renders. State is data a component owns. Context is the pipe that shares it.
 
-// After: two contexts. A theme change re-renders only theme consumers.
-const UserContext = createContext(null);
-const ThemeContext = createContext("light");
+  _How:_
+  > - Move state down to the component that uses it.
+  > - Split one big context into smaller ones. Separate data from actions.
 
-function App() {
-  const [user, setUser] = useState(null);
-  const [theme, setTheme] = useState("light");
-  return (
-    <UserContext.Provider value={{ user, setUser }}>
-      <ThemeContext.Provider value={{ theme, setTheme }}>
-        <Page />
-      </ThemeContext.Provider>
-    </UserContext.Provider>
-  );
-}
-```
+  ```jsx
+  // Before: one context holds everything. Any change re-renders all consumers.
+  const AppContext = createContext({ user, theme, save, logout });
 
-- Verify: in the Profiler, a sibling consumer no longer re-renders.
+  // After: two contexts. A theme change re-renders only theme consumers.
+  const UserContext = createContext(null);
+  const ThemeContext = createContext("light");
 
-#### 6. Keys must be stable [High], a code smell
+  function App() {
+    const [user, setUser] = useState(null);
+    const [theme, setTheme] = useState("light");
+    return (
+      <UserContext.Provider value={{ user, setUser }}>
+        <ThemeContext.Provider value={{ theme, setTheme }}>
+          <Page />
+        </ThemeContext.Provider>
+      </UserContext.Provider>
+    );
+  }
+  ```
 
-- Smell: `key={index}` in a list that reorders or filters.
-- Why: the index moves between items, so React rebuilds the wrong rows.
-- How to create a stable id:
+- Verify: In the Profiler, a sibling consumer no longer re-renders.
 
-```jsx
-// Give each item an id once, when it is created:
-const [items, setItems] = useState(() => [
-  { id: crypto.randomUUID(), text: "first" },
-  { id: crypto.randomUUID(), text: "second" },
-]);
+- 📖 [Context docs](https://react.dev/learn/passing-data-deeply-with-context)
 
-// Add new items the same way:
-setItems((prev) => [...prev, { id: crypto.randomUUID(), text: "new" }]);
+### 6. Keys must be stable [High]
 
-// Use the id as the key:
-{items.map((item) => <Row key={item.id} item={item} />)}
-```
+- [ ] key={index} in a list that reorders or filters.
 
 - Unexpected remount: the component loses its state. Signs: the input loses focus while you type, a checkbox unchecks, the scroll jumps, the Profiler shows a new mount.
 - How to check: type in a row's input, then reorder the list. If the input loses focus, the row remounted.
 
-#### 7. Heavy work in render [High], a code smell
+  _Why:_
+  > The index moves between items, so React rebuilds the wrong rows.
+
+  _How:_
+  > - Use the database id as the key.
+  > - If there is no id, create one with crypto.randomUUID() when the item is created.
+  > - Signs of an unexpected remount: the input loses focus, a checkbox unchecks, the scroll jumps, the Profiler shows a new mount.
+
+  ```jsx
+  // Give each item an id once, when it is created:
+  const [items, setItems] = useState(() => [
+    { id: crypto.randomUUID(), text: "first" },
+    { id: crypto.randomUUID(), text: "second" },
+  ]);
+
+  // Add new items the same way:
+  setItems((prev) => [...prev, { id: crypto.randomUUID(), text: "new" }]);
+
+  // Use the id as the key:
+  {items.map((item) => <Row key={item.id} item={item} />)}
+  ```
+
+- Verify: No remounts in the Profiler after a reorder.
+
+- 📖 [Rendering lists docs](https://react.dev/learn/rendering-lists)
+
+### 7. Heavy work in render [High]
+
+- [ ] Sorting, filtering, formatting, or parsing during render.
 
 - Heavy work: sorting, filtering, formatting, or parsing during render.
 - How to tell: code in the component body runs on every render. Look for `.filter(`, `.sort(`, `.map(` over big arrays, `JSON.parse`, date formatting.
 - Where to start: the component that owns the list (the parent of the rows). Then follow the widest bars in the flamegraph.
-- Where to move it:
-  1. Into `useMemo` if the result repeats for the same inputs.
-  2. Into an event handler, an effect, or a web worker if it runs once.
-  3. Into the build step if it never changes.
 - Long lists: [virtualization](glossary.md), render only the visible rows with [react-window](https://react-window.vercel.app/).
-- Verify: the flamegraph gets shorter. Typing stays smooth.
 
-### C. Load time
+  _Why:_
+  > Code in the component body runs on every render. Look for .filter(), .sort(), .map() over big arrays, JSON.parse, date formatting.
 
-#### 8. Split the code [High]
+  _How:_
+  > - Move the work into useMemo if the result repeats for the same inputs.
+  > - Move it into an event handler, an effect, or a web worker if it runs once.
+  > - Move it into the build step if it never changes.
+  > - For long lists, render only the visible rows with react-window (virtualization).
+
+- Verify: The flamegraph gets shorter. Typing stays smooth.
+
+- 📖 [react-window](https://react-window.vercel.app/)
+
+**[⬆ back to top](#table-of-contents)**
+
+## C. Load time
+
+### 8. Split the code [High]
+
+- [ ] All routes in one bundle.
 
 - Code splitting: loading code only when a route needs it. [Definition](glossary.md)
 - How to know you need it: the first load is slow, the bundle is big, or a heavy screen is rarely used.
-- How to use it:
-
-```jsx
-import { lazy, Suspense } from "react";
-
-const Settings = lazy(() => import("./Settings"));
-
-function App() {
-  return (
-    <Suspense fallback={<p>Loading...</p>}>
-      <Settings />
-    </Suspense>
-  );
-}
-```
-
 - How to know you went overboard: too many tiny chunks means too many network requests. Split at the route level, not every component. If a chunk is small and rarely changes, leave it in the main bundle.
-- Verify: the first load downloads fewer bytes.
 
-#### 9. Shrink the bundle [Medium]
+  _Why:_
+  > Code splitting loads code only when a route needs it. The first load is slow when everything ships at once.
+
+  _How:_
+  > - Use React.lazy and Suspense around routes.
+  > - Split at the route level, not every component.
+  > - If a chunk is small and rarely changes, leave it in the main bundle.
+
+  ```jsx
+  import { lazy, Suspense } from "react";
+
+  const Settings = lazy(() => import("./Settings"));
+
+  function App() {
+    return (
+      <Suspense fallback={<p>Loading...</p>}>
+        <Settings />
+      </Suspense>
+    );
+  }
+  ```
+
+- Verify: The first load downloads fewer bytes.
+
+- 📖 [React.lazy docs](https://react.dev/reference/react/lazy)
+
+### 9. Shrink the bundle [Medium]
+
+- [ ] The bundle is bigger than the app needs.
 
 - Tree-shaking: the build removes code you never use. [Definition](glossary.md)
-- Do: check with [vite-bundle-visualizer](https://www.npmjs.com/package/vite-bundle-visualizer) or [webpack-bundle-analyzer](https://www.npmjs.com/package/webpack-bundle-analyzer). Remove or replace big packages. Use per-package imports.
-- Verify: the bundle picture gets smaller.
 
-#### 10. Images and fonts [Medium]
+  _Why:_
+  > Tree-shaking removes code you never use. Big packages you barely use cost every user download time.
+
+  _How:_
+  > - Check with vite-bundle-visualizer or webpack-bundle-analyzer.
+  > - Remove or replace big packages.
+  > - Use per-package imports.
+
+- Verify: The bundle picture gets smaller.
+
+- 🛠 [Bundle visualizer guide](guides/bundle-visualizer.md)
+- 📖 [vite-bundle-visualizer](https://www.npmjs.com/package/vite-bundle-visualizer)
+- 📖 [webpack-bundle-analyzer](https://www.npmjs.com/package/webpack-bundle-analyzer)
+
+### 10. Images and fonts [Medium]
+
+- [ ] Images without lazy loading, or critical fonts loading late.
 
 - Lazy loading: the image loads only when it is near the screen. [Definition](glossary.md)
-- Do: add `loading="lazy"` to images below the fold. Add `sizes`. Preload the critical font.
-- Verify: LCP and CLS improve in [Lighthouse](guides/lighthouse.md).
 
-### D. What users feel
+  _Why:_
+  > Lazy loading means the image loads only when it is near the screen. Large images and late fonts slow LCP and cause layout shift.
 
-#### 11. Core Web Vitals [Medium]
+  _How:_
+  > - Add loading="lazy" to images below the fold.
+  > - Add sizes.
+  > - Preload the critical font.
 
-The acronyms, spelled out:
+- Verify: LCP and CLS improve in Lighthouse.
+
+- 🛠 [Lighthouse guide](guides/lighthouse.md)
+
+**[⬆ back to top](#table-of-contents)**
+
+## D. What users feel
+
+### 11. Core Web Vitals [Medium]
+
+- [ ] No field data and no budgets for LCP, INP, CLS.
 
 - LCP: Largest Contentful Paint. When the main content appears. Under 2.5 s.
 - INP: Interaction to Next Paint. How fast the page answers a click. Under 200 ms.
 - CLS: Cumulative Layout Shift. How much the page jumps. Under 0.1.
 
-- Do: track with [web-vitals](https://www.npmjs.com/package/web-vitals). Set budgets in [Lighthouse CI](https://github.com/GoogleChrome/lighthouse-ci).
+  _Why:_
+  > LCP is Largest Contentful Paint, when the main content appears. INP is Interaction to Next Paint, how fast the page answers a click. CLS is Cumulative Layout Shift, how much the page jumps.
 
-#### 12. Long tasks [Medium]
+  _How:_
+  > - Track with web-vitals.
+  > - Set budgets in Lighthouse CI.
+
+- Verify: Budgets pass on every push.
+
+- 📖 [web.dev vitals](https://web.dev/articles/vitals)
+- 📖 [web-vitals package](https://www.npmjs.com/package/web-vitals)
+- 📖 [Lighthouse CI](https://github.com/GoogleChrome/lighthouse-ci)
+
+### 12. Long tasks [Medium]
+
+- [ ] Work on the main thread that blocks the screen.
 
 - Long task: work on the main thread that blocks the screen for a moment. [Definition](glossary.md)
 - Interaction: a click, a keypress, a scroll.
 - Handler: the function that runs when the interaction happens.
 - Blocking time: the time the page cannot respond because the main thread is busy.
-- How to see one: Chrome Performance panel, record an interaction, read the blocking time.
-- Fix: move the work out of the handler. Defer what is not urgent.
 - Example: a click handler that loops over 100,000 items blocks the page. Move the loop to a worker, or chunk it.
 
-### E. Guard rails
+  _Why:_
+  > An interaction is a click, a keypress, or a scroll. A handler is the function that runs when it happens. Blocking time is the time the page cannot respond because the main thread is busy.
 
-These do not find the first problem. They stop the next one. Run lint anytime; it is cheap.
+  _How:_
+  > - Open the Chrome Performance panel, record an interaction, read the blocking time.
+  > - Move the work out of the handler. Defer what is not urgent.
 
-#### 13. Lint with autofix [High]
+- Verify: The blocking time drops, and INP follows.
 
-- Do: turn on [eslint-plugin-react-hooks](https://www.npmjs.com/package/eslint-plugin-react-hooks) and [eslint-plugin-react-compiler](https://www.npmjs.com/package/eslint-plugin-react-compiler). Config included: `eslint.config.js`.
-- How to check it works: run `npm run lint`. Zero errors means it is on.
+- 📖 [Optimize long tasks](https://web.dev/articles/optimize-long-tasks)
+
+**[⬆ back to top](#table-of-contents)**
+
+## E. Guard rails
+
+### 13. Lint with autofix [High]
+
+- [ ] Broken hook rules and dependency arrays are invisible while typing.
+
 - How to run without pushing: run it locally. CI is the same commands, automated.
 
-#### 14. React Compiler [Medium]
+  _Why:_
+  > A linter checks the code as you write it. Autofix applies the fix for you.
 
-- Build-time memoization. Fewer re-renders without manual memo code.
-- How to check it works: the Profiler shows fewer re-renders with no manual memo code.
+  _How:_
+  > - Turn on eslint-plugin-react-hooks and eslint-plugin-react-compiler.
+  > - Config included: eslint.config.js.
 
-#### 15. Perf tests [Medium]
+- Verify: Run npm run lint. Zero errors means it is on.
 
-- A test that fails when a component re-renders for no reason. Example: `test/perf-regression.test.jsx`.
+- 📖 [eslint-plugin-react-hooks](https://www.npmjs.com/package/eslint-plugin-react-hooks)
+- 📖 [eslint-plugin-react-compiler](https://www.npmjs.com/package/eslint-plugin-react-compiler)
+
+### 14. React Compiler [Medium]
+
+- [ ] Manual memoization is error-prone and noisy.
+
+  _Why:_
+  > React Compiler adds memoization at build time. Fewer re-renders without manual memo code.
+
+  _How:_
+  > - Enable babel-plugin-react-compiler on React 19.
+
+- Verify: The Profiler shows fewer re-renders with no manual memo code.
+
+- 📖 [React Compiler docs](https://react.dev/learn/react-compiler)
+
+### 15. Perf tests [Medium]
+
+- [ ] Perf fixes silently regress later.
+
 - How to run without pushing: `npm test`.
 
-#### 16. CI gates [Medium]
+  _Why:_
+  > A test that fails when a component re-renders for no reason stops the regression before it ships.
+
+  _How:_
+  > - Write a call-count test. Example: test/perf-regression.test.jsx.
+  > - Use React.Profiler for duration asserts.
+
+- Verify: The test goes red on a regression, green after the fix.
+
+- 📖 [React.Profiler docs](https://react.dev/reference/react/Profiler)
+
+### 16. CI gates [Medium]
+
+- [ ] A slow change can merge without anyone noticing.
 
 - CI: checks that run on every push. [Definition](glossary.md)
-- Do: run lint and tests. Add Lighthouse CI budgets. Add [React Doctor](https://react.doctor) as a required check.
 - How to run without pushing: run the same commands locally. CI is just automation of them.
 
+  _Why:_
+  > CI is checks that run on every push. It is the same commands you run locally, automated.
+
+  _How:_
+  > - Run lint and tests.
+  > - Add Lighthouse CI budgets.
+  > - Add React Doctor as a required check.
+
+- Verify: A slow change cannot merge.
+
+- 📖 [React Doctor CI](https://react.doctor/ci)
+
+**[⬆ back to top](#table-of-contents)**
+<!-- CHECKLIST:END -->
+
+<!-- SMELLS:START -->
 ## Code smells at a glance
 
-- [ ] `key={index}` in a reordering list -> [item 6](#6-keys-must-be-stable-high-a-code-smell)
-- [ ] `onClick={() => ...}` or `style={{...}}` into a memoized component -> [item 3](#3-unstable-props-high-a-code-smell)
-- [ ] Sorting or filtering inside the render body -> [item 7](#7-heavy-work-in-render-high-a-code-smell)
+- [ ] Unstable props into a memoized component -> [item 3](#3-unstable-props-high)
+
+  ```jsx
+  onClick={() => ...}
+  style={{...}}
+  ```
+
 - [ ] One context holding many values -> [item 5](#5-context-re-renders-every-consumer-medium)
+
+  ```jsx
+  const AppContext = createContext({ user, theme, save, logout });
+  ```
+
+- [ ] Index used as a key in a reordering list -> [item 6](#6-keys-must-be-stable-high)
+
+  ```jsx
+  items.map((item, index) => <Row key={index} item={item} />)
+  ```
+
+- [ ] Sorting or filtering inside the render body -> [item 7](#7-heavy-work-in-render-high)
+
+  ```jsx
+  const sorted = items.sort((a, b) => a - b); // runs on every render
+  ```
+
 - [ ] All routes in one bundle -> [item 8](#8-split-the-code-high)
-- [ ] `<img>` without `loading="lazy"` -> [item 10](#10-images-and-fonts-medium)
-- [ ] Long lists rendered one row at a time -> [item 7](#7-heavy-work-in-render-high-a-code-smell)
 
-## Guides for beginners
+  ```jsx
+  import Settings from "./Settings";
+  import Profile from "./Profile"; // both load on first visit
+  ```
 
-One guide per tool. Each has an analogy, steps, a practice task, and a "done when" check.
+- [ ] Images without lazy loading -> [item 10](#10-images-and-fonts-medium)
 
-1. [React Scan](guides/react-scan.md): see re-render problems with zero setup
-2. [React Doctor](guides/react-doctor.md): scan a codebase for smells and traces
-3. [React DevTools Profiler](guides/react-dev-tools-profiler.md): find why a component re-renders
-4. [Lighthouse](guides/lighthouse.md): measure load speed and read the fixes
-5. [why-did-you-render](guides/why-did-you-render.md): find unnecessary re-renders in dev mode
-6. [Bundle visualizer](guides/bundle-visualizer.md): see what makes the bundle big
+  ```jsx
+  <img src="hero.jpg" />
+  ```
+<!-- SMELLS:END -->
 
-## Tools and references
+## Tools
 
 | Tool | What it does | Guide | Reference |
 | --- | --- | --- | --- |
@@ -334,7 +579,16 @@ For your own app, add:
 | React Doctor | One-command CI: `npx react-doctor@latest ci install` | https://react.doctor/ci |
 | web-vitals + a dashboard | Shows real-user field data from production | https://github.com/GoogleChrome/web-vitals |
 
-## Agent audit flow
+## For agents
+
+Three surfaces, one rule corpus. Modeled on thedaviddias/front-end-checklist.
+
+- README: the checklist for humans, worked through in one page.
+- `rules/rules.json`: the same rules as structured data. Agents and tools read this.
+- MCP server: `packages/mcp/server.mjs` exposes the rules to MCP-capable agents.
+  Run it with `npm run mcp`, or add `.mcp.json` to your agent config.
+
+The MCP server has three tools: `list_rules`, `get_rule`, and `audit_plan`.
 
 - [audit-checklist.md](audit-checklist.md): the full checklist with detection and fix steps
 - [audit-prompt.md](audit-prompt.md): paste this prompt into a coding agent to audit a codebase
@@ -347,11 +601,21 @@ For your own app, add:
 | `react-performance-checklist.md` | The checklist as a single page (same content as above) |
 | `glossary.md` | Plain meanings for every word, with examples and official docs |
 | `rules/rules.json` | The 16 rules as structured data. Read by agents and the MCP server |
+| `scripts/generate-readme.mjs` | Builds the checklist sections from `rules/rules.json` |
 | `packages/mcp/server.mjs` | MCP server: `list_rules`, `get_rule`, `audit_plan` |
 | `guides/` | One beginner guide per tool |
 | `eslint.config.js` | Lint rules with autofix |
 | `test/perf-regression.test.jsx` | A test that shows a smell and its fix |
 | `.github/workflows/check.yml` | CI: lint and tests on every push |
+
+## References
+
+- [React docs](https://react.dev)
+- [web.dev performance](https://web.dev/learn/performance)
+- [Front-End Checklist](https://github.com/thedaviddias/front-end-checklist)
+- [Front-End Performance Checklist](https://github.com/thedaviddias/front-end-performance-checklist)
+- [React Scan](https://react-scan.million.dev)
+- [React Doctor](https://react.doctor)
 
 ## Credits
 

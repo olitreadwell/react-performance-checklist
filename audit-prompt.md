@@ -28,5 +28,11 @@ Hand off, do not reinvent:
   CSS, delivery, third-party), use the `web-quality-skills` agent skill
   (addyosmani/web-quality-skills) if it is installed. It measures before
   it changes anything.
+- For the general frontend audit (HTML, CSS, accessibility, SEO,
+  security, images, privacy), use the Front-End Checklist
+  (thedaviddias/front-end-checklist, 74k stars, 385 rules) through its
+  MCP server at https://mcp.frontendchecklist.io if it is available:
+  `get_checklist_rules` to scope the audit, then `check_rule` or
+  `audit_url` for evidence. Do not reinvent rules it already covers.
 - This repo's `audit-checklist.md` covers the React render pass. Read it
   fully and report findings by its IDs.

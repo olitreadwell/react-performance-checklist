@@ -1391,6 +1391,7 @@ keep this repo for the React-specific pass.
 | Skill | What it does | Install | Stars |
 | --- | --- | --- | --- |
 | [web-quality-skills](https://github.com/addyosmani/web-quality-skills) | Measurement-first agent skills: Lighthouse, Core Web Vitals, load, delivery, a11y, SEO. Works with Claude Code, Codex, Gemini. | `npx skills add addyosmani/web-quality-skills` | 2.7k, active |
+| [Front-End Checklist](https://github.com/thedaviddias/front-end-checklist) | The original checklist, now a 385-rule corpus with an MCP server: `review_code`, `check_rule`, `fix_rule`, `audit_url`, `get_checklist_rules`. The general frontend audit and fix pass. | MCP: `https://mcp.frontendchecklist.io` | 74k, active |
 | [react-best-practices (Vercel)](https://github.com/vercel-labs/agent-skills/tree/main/skills/react-best-practices) | Vercel's agent skill: 70 rules across waterfalls, bundles, server, client fetching, renders, JS. MIT. Same format as the rules in this repo. | `npx skills add vercel-labs/agent-skills` | official Vercel |
 
 The division of labour:
@@ -1398,6 +1399,10 @@ The division of labour:
 - General web pass (images, fonts, CSS, delivery, caching, third-party):
   hand to `web-quality-skills`. It measures with Lighthouse and Core Web
   Vitals before it changes anything.
+- General frontend audit and fix (HTML, CSS, accessibility, SEO,
+  security, images, privacy): hand to the Front-End Checklist MCP
+  (`thedaviddias/front-end-checklist`). It has a rule per checklist
+  item: `check_rule`, `fix_rule`, `review_code`.
 - React render pass (memo, context, keys, heavy work in render): use this
   repo's rules and audit flow.
 - Deep React/Next pass (waterfalls, bundles, server-side, advanced

@@ -28,6 +28,9 @@ Rules:
 Hand off, do not reinvent:
 - For the general web pass, use the `web-quality-skills` agent skill
   (addyosmani/web-quality-skills) if it is installed.
+- For general frontend fixes, use the Front-End Checklist MCP
+  (https://mcp.frontendchecklist.io) when available: `fix_rule` for the
+  remediation steps, `review_code` to verify the fix.
 - This repo's `audit-checklist.md` covers the React render pass. Follow
   its fix steps and verify steps.
 

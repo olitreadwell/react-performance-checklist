@@ -886,7 +886,7 @@
       {
         "kind": "docs",
         "label": "Partytown",
-        "url": "https://partytown.builder.io/"
+        "url": "https://github.com/QwikDev/partytown"
       }
     ],
     "smellCode": "<script src=\"https://analytics.example.com/tracker.js\"></script>",

@@ -1019,7 +1019,7 @@ You now have a list of problems. Fix the High items below.
 - Verify: Lighthouse third-party audit passes, and the main thread is quieter.
 
 - 📖 [web.dev third-party guidance](https://web.dev/articles/third-party-javascript)
-- 📖 [Partytown](https://partytown.builder.io/)
+- 📖 [Partytown](https://github.com/QwikDev/partytown)
 
 **[⬆ back to top](#table-of-contents)**
 

@@ -1068,7 +1068,7 @@ What each command does:
 - Verify: Lighthouse third-party audit passes, and the main thread is quieter.
 
 - 📖 [web.dev third-party guidance](https://web.dev/articles/third-party-javascript)
-- 📖 [Partytown](https://partytown.builder.io/)
+- 📖 [Partytown](https://github.com/QwikDev/partytown)
 
 **[⬆ back to top](#table-of-contents)**
 
@@ -1305,7 +1305,7 @@ What each command does:
 | react-window | Speeds up long lists (virtualization) | | https://react-window.vercel.app/ |
 | TanStack Virtual | Modern virtualization for long lists, framework-agnostic | | https://tanstack.com/virtual |
 | react-intersection-observer | Tells you when an element enters the viewport. Powers lazy loading | | https://github.com/thebuilder/react-intersection-observer |
-| Partytown | Moves third-party scripts off the main thread into a web worker | | https://partytown.builder.io/ |
+| Partytown | Moves third-party scripts off the main thread into a web worker | | https://github.com/QwikDev/partytown |
 | Quicklink | Prefetches in-viewport links during idle time | | https://github.com/GoogleChromeLabs/quicklink |
 | perfume.js | Measures performance vitals in the browser | | https://github.com/Zizzamia/perfume.js |
 | Biome | Linter and formatter with autofix | | https://biomejs.dev/ |
@@ -1450,7 +1450,7 @@ Base references:
 - [React Doctor](https://react.doctor)
 - [web-quality-skills](https://github.com/addyosmani/web-quality-skills)
 - [TanStack Virtual](https://tanstack.com/virtual)
-- [Partytown](https://partytown.builder.io/)
+- [Partytown](https://github.com/QwikDev/partytown)
 
 ## Credits
 

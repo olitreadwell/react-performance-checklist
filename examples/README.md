@@ -7,7 +7,8 @@ shows the full agent process: audit, report, fix, re-measure.
 - `slow-app/` — the smells planted. `npm test` fails (red).
 - `slow-app-fixed/` — the fixes applied. `npm test` passes (green), and
   it ships lint, size-limit, Lighthouse budgets, and a CI workflow.
-- `screenshots/` — the UI before and after. Byte-identical, on purpose.
+- `screenshots/` — the UI before and after. Same layout; the only visible
+  change is local images instead of remote photos (the F-01 fix).
 
 Run them:
 

@@ -15,7 +15,10 @@ module.exports = {
         "categories:best-practices": ["error", { minScore: 0.9 }],
         "categories:seo": ["error", { minScore: 0.9 }],
         "largest-contentful-paint": ["error", { maxNumericValue: 2500 }],
-        "interaction-to-next-paint": ["error", { maxNumericValue: 200 }],
+        // INP needs a user interaction to measure. A load-only run
+        // cannot produce it, so warn instead of fail. Test it with a
+        // user-flow or field data (web-vitals).
+        "interaction-to-next-paint": ["warn", { maxNumericValue: 200 }],
         "cumulative-layout-shift": ["error", { maxNumericValue: 0.1 }],
         "total-byte-weight": ["error", { maxNumericValue: 1_500_000 }],
         "unused-javascript": ["error", { maxNumericValue: 300_000 }],

@@ -921,7 +921,7 @@ What each command does:
 This repo ships the automation, not just the advice. No agent required:
 
 - `.github/workflows/check.yml` runs lint and tests on every push.
-- `.lighthouserc.js` is a Lighthouse CI budget file. Copy it into your
+- `.lighthouserc.cjs` is a Lighthouse CI budget file. Copy it into your
   app, set the URLs, and run `npx lhci autorun`. It fails the build when
   LCP, INP, CLS, or bundle weight regress.
 - `.size-limit.json` is a bundle budget. Copy it into your app and run
@@ -1005,7 +1005,7 @@ the job. Run the audit, then hand the findings to the right skill.
 | `rules/rules.json` | The 21 rules as structured data. Read by agents and the MCP server |
 | `scripts/generate-readme.mjs` | Builds the checklist sections from `rules/rules.json` |
 | `scripts/audit.mjs` | Runs the referenced scanners against an app and writes a report |
-| `.lighthouserc.js` | Lighthouse CI budgets. Copy into your app |
+| `.lighthouserc.cjs` | Lighthouse CI budgets. Copy into your app |
 | `.size-limit.json` | Bundle budget. Copy into your app |
 | `packages/mcp/server.mjs` | MCP server: `list_rules`, `get_rule`, `audit_plan`, `fix_plan` |
 | `guides/` | One beginner guide per tool |

@@ -9,9 +9,12 @@ performance:
   (green). It ships lint, tests, size-limit, Lighthouse budgets, and a
   CI workflow, so the checks run without an agent.
 
-The screenshots in `screenshots/` are byte-identical. That is the point:
-performance fixes are invisible in a static screenshot. The difference
-shows in render counts, bundle size, and network bytes.
+The screenshots in `screenshots/` look the same at a glance. The only
+visible difference is the image content: the slow app loads remote
+photos, the fixed app serves local placeholders (the F-01 fix). The
+React fixes — memo, keys, context, code splitting — are invisible in a
+static screenshot. The difference shows in render counts, bundle size,
+and network bytes.
 
 ## The app
 
@@ -209,11 +212,33 @@ Tests  5 passed (5)          # was 5 failed
 React Doctor: 85 / 100       # was 76 / 100
 Size: 60.63 kB gzipped       # budget 300 kB
 Build: main bundle + Reports chunk   # was one 192 kB bundle
-Screenshots: byte-identical   # no visual regression
 ```
 
 The remaining React Doctor warning is accessibility (placeholder label),
 not performance. Left alone, per the checklist: fix the measured cost.
+
+## Lighthouse CI: the gate caught a real issue
+
+The first `lhci autorun` run failed. The gate did its job:
+
+```text
+✘ largest-contentful-paint   found 2855 ms, budget 2500 ms
+```
+
+The LCP element was the first product image, loaded from a remote photo
+service. The page itself was fast (FCP 1.3 s, CLS 0). The fix was the
+F-01 rule: serve the image from somewhere fast. The fixed app serves
+local SVG placeholders instead of remote photos.
+
+```text
+Before: LCP 2855 ms, 1101 KiB total, remote images
+After:  LCP 1865 ms,   62 KiB total, local images
+Performance score: 99
+```
+
+INP is a warning, not a failure: a load-only Lighthouse run cannot
+measure it, because INP needs a user interaction. Test it with a
+user-flow or with field data from `web-vitals`.
 
 ## Why the fixes happened
 
@@ -235,7 +260,7 @@ The fixed app ships the automation, so the checks run on every push:
 
 - `.github/workflows/check.yml` — lint, tests, build, size-limit,
   react-doctor.
-- `.lighthouserc.js` — Lighthouse CI budgets for LCP, INP, CLS.
+- `.lighthouserc.cjs` — Lighthouse CI budgets for LCP, INP, CLS.
 - `.size-limit.json` — 300 kB gzipped bundle budget.
 - `npm run audit -- <path>` — the same scan, one command, no agent.
 

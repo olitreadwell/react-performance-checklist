@@ -23,6 +23,8 @@ Terms with a link open the official documentation.
 | Context provider | The component that hands data down. | "Wrap the app in the provider." |
 | Consumer | A component that reads context. | "Every consumer re-renders when context changes." |
 | Prop drilling | Passing props down through many levels by hand. | "Context reduces prop drilling." |
+| Interaction | A click, a keypress, or a scroll. | "INP measures one interaction." |
+| Handler | The function that runs when an interaction happens. | "The click handler sorts the list." |
 
 ## Rendering
 
@@ -40,6 +42,9 @@ Terms with a link open the official documentation.
 | [Commit](https://react.dev/learn/render-and-commit) | The moment React applies a finished render to the screen. | "The Profiler shows each commit." |
 | Flamegraph | A chart of where time goes during a render. Wider bars mean more time. | "The wide bar is the slow component." |
 | [Virtualization](https://react-window.vercel.app/) | Rendering only the visible rows of a long list. | "react-window does virtualization." |
+| Subtree | A component and everything it renders. | "The list row and its children are one subtree." |
+| Boundary | The component you wrap with memo. Re-renders stop there. | "memo on the row is the boundary." |
+| Remount | React destroying a component and building it again. | "A remount clears the input." |
 
 ## Load time
 
@@ -60,6 +65,7 @@ Terms with a link open the official documentation.
 | [INP](https://web.dev/articles/vitals) | Interaction to Next Paint. How fast the page answers a click. | "INP below 200 ms feels fast." |
 | [CLS](https://web.dev/articles/vitals) | Cumulative Layout Shift. How much the page jumps. | "CLS under 0.1 is good." |
 | [Long task](https://web.dev/articles/optimize-long-tasks) | Work on the main thread that blocks the screen. | "A long task froze the search." |
+| Blocking time | The time the page cannot respond because the main thread is busy. | "The click blocked the page for 300 ms." |
 | Main thread | The line of work that runs the page. | "Heavy math blocks the main thread." |
 | Overhead | Extra work a tool adds, on top of the job. | "memo adds a small overhead." |
 | Baseline | The number you start from, before a fix. | "The baseline LCP was 4 s." |

@@ -48,6 +48,8 @@ If you do not see the tabs, reload the page and look again.
 The slow action is the thing the user says feels slow.
 If they say typing lags, record typing.
 If they say a screen takes long to open, record opening it.
+If nothing feels slow, record normal use for a minute.
+The slowest commit will still show up.
 
 1. Click the record button. It is a blue circle, like a record button.
 2. Do the slow action.
@@ -56,12 +58,14 @@ If they say a screen takes long to open, record opening it.
 
 ## Step 6: Read the results
 
-1. Look at the bar chart at the top. Each bar is one render, called a commit.
+1. Look at the top of the Profiler. You see one vertical bar per render, called a commit.
 2. Find the tallest bar. A taller bar is a slower render. That is the slowest commit.
+   If all bars look the same height, the renders are similar. Pick any bar.
 3. Click the tallest bar.
-4. Click a component name in the flamegraph.
-   In the flamegraph, a wider bar means more time. Height is not time there.
-5. On the right, read "Why did this render?".
+4. Below, the flamegraph shows horizontal bars. A wider bar means more time.
+   Height is not time in the flamegraph.
+5. Use the Ranked tab to see the most expensive components, biggest first.
+6. Click a component. On the right, read "Why did this render?".
    It says things like:
    - "The parent component rendered."
    - "Props changed: value from 1 to 2."

@@ -198,12 +198,12 @@ You now have a list of problems. Fix the High items below.
 
 - [ ] One big context re-renders every consumer on any change.
 
-- State and context are not the same. State is data a component owns. Context is the pipe that shares it.
+- State and context are not the same. State is data a component owns and re-renders on change. Context is how a provider hands any value to every component beneath it without prop drilling.
 - Consumer: any component that reads the context.
 - What happens: when the context value changes, every consumer re-renders.
 
   _Why:_
-  > A consumer is any component that reads the context. When the context value changes, every consumer re-renders. State is data a component owns. Context is the pipe that shares it.
+  > A consumer is any component that reads the context. When the provider hands a new value, every consumer re-renders. The value is most often state, but context can carry anything: callbacks, config, theme constants. Context does not own data; it distributes whatever the provider hands it.
 
   _How:_
   > - Move state down to the component that uses it.

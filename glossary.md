@@ -19,8 +19,8 @@ Terms with a link open the official documentation.
 | [useMemo](https://react.dev/reference/react/useMemo) | The hook that saves a computed result. | "useMemo saves the filtered list." |
 | [Dependency array](https://react.dev/reference/react/useMemo) | The list in a hook that says when to re-run. | "useMemo re-runs when items change." |
 | [Key](https://react.dev/learn/rendering-lists) | A label React uses to tell list items apart. | "The key is the item id, not the index." |
-| [Context](https://react.dev/learn/passing-data-deeply-with-context) | A way to share data with many components at once. | "The theme lives in context." |
-| Context provider | The component that hands data down. | "Wrap the app in the provider." |
+| [Context](https://react.dev/learn/passing-data-deeply-with-context) | A specific React mechanism: a provider hands any value to every component beneath it that reads it. The value can be state, but it does not have to be. | "The theme lives in context." |
+| Context provider | The component that hands a value down to every consumer. | "Wrap the app in the provider." |
 | Consumer | A component that reads context. | "Every consumer re-renders when context changes." |
 | Prop drilling | Passing props down through many levels by hand. | "Context reduces prop drilling." |
 | Interaction | A click, a keypress, or a scroll. | "INP measures one interaction." |

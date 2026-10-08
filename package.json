@@ -26,6 +26,6 @@
     "vite": "8.3.2",
     "vitest": "5.0.3",
     "zod": "4.6.5",
-    "zod-validation-error": "4.0.2"
+    "zod-validation-error": "5.0.0"
   }
 }

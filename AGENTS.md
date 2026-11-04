@@ -1,5 +1,12 @@
 # AGENTS.md
 
+<!-- coding-standards:begin -->
+Project coding rules: `CODING_STANDARDS.md`. Global baseline:
+`~/.agents/standards/CODING_STANDARDS.md`. Read both before changing
+behaviour.
+<!-- coding-standards:end -->
+
+
 Rules for agents that work in this repository.
 
 ## Content rules
